@@ -7,3 +7,5 @@ See [Docs](https://v2.nonebot.dev/)
 ```shell
 nb docker build
 ```
+
+test
