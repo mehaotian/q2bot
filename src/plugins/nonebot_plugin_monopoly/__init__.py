@@ -31,7 +31,7 @@ require("nonebot_plugin_tortoise_orm")
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_monopoly",
     description="大富翁",
-    usage="",
+    usage=f"@bot 签到",
     type="application",
     homepage="",
     config=Config,
@@ -49,8 +49,6 @@ async def _(bot: Bot, event: GroupMessageEvent):
     logger.debug(f"群 group_id: 用户 {user_id} 签到")
     msg = await handle_sign_in(user_id, group_id, event.sender)
     await risk_msg(bot=bot, event=event,  msg=msg)
-
-
 
 
 async def risk_msg(bot: Bot, event, msg, reply=False, at_sender=False):
