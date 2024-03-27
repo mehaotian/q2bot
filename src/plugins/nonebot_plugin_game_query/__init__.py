@@ -1,4 +1,4 @@
-from nonebot import on_command
+from nonebot import on_command,on_regex
 from nonebot.adapters.onebot.v11 import Bot, Event, GroupMessageEvent
 from nonebot.adapters.onebot.v11.message import Message, MessageSegment
 from nonebot.rule import to_me
@@ -16,16 +16,17 @@ __plugin_meta__ = PluginMetadata(
 
 
 # 小黑盒特惠
-game = on_command("test", priority=10, block=True)
+# game = on_command("test", priority=10, block=True)
+# 小黑盒特惠查询 ，关键词 史低 小黑盒 游戏价格 特惠
+gamereg = "(史低|小黑盒|游戏价格|特惠)"
+gamequery = on_regex(pattern = gamereg, rule=to_me(), priority=20, block=True)
 
 # 获取小黑盒特惠消息
-
-
-@game.handle()
+@gamequery.handle()
 async def _(bot: Bot, event: Event):
     data = hey_box(20)
     content = []
-
+    await bot.send(event= event, message= "正在为您查询，请稍等...")
     for item in data:
         content_item = MessageSegment.image(item['图片'])+MessageSegment.text(
             (f"游戏名称：{item['标题']}\n"
@@ -63,4 +64,9 @@ async def _(bot: Bot, event: Event):
     msg_list = [item for item in content]
 
     before_content.extend(msg_list)
-    await bot.call_api("send_group_forward_msg", group_id=event.group_id, messages=before_content)
+
+    # 做一个返回错误的处理
+    try :
+        await bot.call_api("send_group_forward_msg", group_id=event.group_id, messages=before_content)
+    except Exception as e:
+        await bot.send(event= event, message= "哎呀，出错了，再试一次吧！")
