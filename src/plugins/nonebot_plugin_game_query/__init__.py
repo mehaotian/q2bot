@@ -10,13 +10,11 @@ from .config import Config
 __plugin_meta__ = PluginMetadata(
     name="游戏查询",
     description="",
-    usage="",
+    usage="指令：@bot (史低|小黑盒|游戏价格|特惠)",
     config=Config,
 )
 
 
-# 小黑盒特惠
-# game = on_command("test", priority=10, block=True)
 # 小黑盒特惠查询 ，关键词 史低 小黑盒 游戏价格 特惠
 gamereg = "(史低|小黑盒|游戏价格|特惠)"
 gamequery = on_regex(pattern = gamereg, rule=to_me(), priority=20, block=True)
