@@ -1,4 +1,5 @@
 
+import locale
 from nonebot import on_regex, require, on_fullmatch
 from nonebot.params import RegexGroup
 from nonebot.adapters.onebot.v11 import (
@@ -18,11 +19,9 @@ from .config import Config
 from nonebot.typing import T_State
 
 from .serivce.data_source import (
-    create_user,
     handle_sign_in,
-    handle_query,
-    handle_change_bg
 )
+print(locale.getlocale())
 
 
 require("nonebot_plugin_tortoise_orm")
@@ -42,6 +41,8 @@ __plugin_meta__ = PluginMetadata(
 sign = on_fullmatch("签到", priority=5, block=False)
 
 #  签到
+
+
 @sign.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
     user_id = int(event.user_id)
