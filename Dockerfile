@@ -34,9 +34,10 @@ COPY --from=requirements_stage /wheel /wheel
 
 RUN apt-get update \
     && apt-get install -y locales \
-    && rm -rf /var/lib/apt/lists/*
+    && rm -rf /var/lib/apt/lists/* \
+    && echo "zh_CN.UTF-8 UTF-8" > /etc/locale.gen \
+    && locale-gen zh_CN.UTF-8
 
-RUN locale-gen zh_CN.UTF-8
 ENV LANG zh_CN.UTF-8
 ENV LANGUAGE zh_CN:zh
 ENV LC_ALL zh_CN.UTF-8
