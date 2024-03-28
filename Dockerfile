@@ -14,7 +14,6 @@ RUN python -m pip wheel --wheel-dir=/wheel --no-cache-dir --requirement ./requir
 RUN python -m pipx run --no-cache nb-cli generate -f /tmp/bot.py
 
 
-
 FROM python:3.10-slim
 
 WORKDIR /app
@@ -32,14 +31,19 @@ COPY --from=requirements_stage /tmp/bot.py /app
 COPY ./docker/_main.py /app
 COPY --from=requirements_stage /wheel /wheel
 
+
+RUN apt-get update \
+    && apt-get install -y locales \
+    && rm -rf /var/lib/apt/lists/*
+
+RUN locale-gen zh_CN.UTF-8
+ENV LANG zh_CN.UTF-8
+ENV LANGUAGE zh_CN:zh
+ENV LC_ALL zh_CN.UTF-8
+
+
 RUN pip install --no-cache-dir gunicorn uvicorn[standard] nonebot2 \
   && pip install --no-cache-dir --no-index --force-reinstall --find-links=/wheel -r /wheel/requirements.txt && rm -rf /wheel
 COPY . /app/
-
-# Set the locale
-RUN apt-get clean && apt-get update && apt-get install -y locales
-RUN locale-gen zh_CN.UTF-8
-
-ENV LANG zh_CN.UTF-8
 
 CMD ["/start.sh"]
