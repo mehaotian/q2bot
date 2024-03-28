@@ -2,13 +2,10 @@
 
 import os
 import random
-from nonebot import on_regex, on_command, on_fullmatch
-from nonebot.params import RegexGroup
+from nonebot import on_command
 from nonebot.adapters.onebot.v11 import (
     Bot,
     Event,
-    MessageSegment,
-    GroupMessageEvent,
     Message,
 )
 from nonebot.typing import T_State

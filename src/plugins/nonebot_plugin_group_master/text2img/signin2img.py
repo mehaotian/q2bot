@@ -47,20 +47,39 @@ class TxtToImg:
         bg_image_path="",
         nickname="",
         sign_num=1,
-        today_gold=0,
-        all_gold=0,
-        today_charm=0,
-        all_charm=0,
         bg_name="",
+        data=None,
     ) -> bytes:
-        """将文本转换为图片"""
+        """
+        将文本转换为图片
+        :param font_path: 字体路径
+        :param bg_image_path: 背景图片路径
+        :param nickname: 昵称
+        :param sign_num: 签到次数
+        :param bg_name: 背景图片名称
+        :param data: 签到用户数据
+        """
+        # 累计签到数据
+        sign_times = data.get('sign_times', 0)
+        # 连续签到次数
+        streak = data.get('streak', 0)
+
+        # 标题字体实例
         title_font = ImageFont.truetype(font_path, 32)
+        # 时间字体实例
         date_font = ImageFont.truetype(font_path, 48)
+        # 行间距
         lines_space = 8
 
+        # 整体图片的宽高
+        box_width = 500
+        box_height = 630
         # 这是不要背景 ，纯文字
-        image = Image.new("RGBA", (500, 730), '#ffffff')
+        image = Image.new("RGBA", (box_width, box_height), '#ffffff')
+        # 临时背景图路径
         tempurl = str(bg_image_path)
+
+        # 如果是网络图片，下载到本地，否则直接打开
         if tempurl.startswith("http") or tempurl.startswith("https"):
             cache_path = os.path.join(cache_directory, bg_name)
             print(f"cache_path: {cache_path}")
@@ -71,9 +90,9 @@ class TxtToImg:
             background_image_path = Path("resource") / bg_image_path
             background_image = Image.open(background_image_path)
 
-        logger.debug(f"background_image: {background_image}")
-        # 目标显示区域的尺寸
-        img_width = 500
+        # logger.debug(f"background_image: {background_image}")
+        # 目标显示区域的尺寸 ,图片宽度与盒子宽度一致
+        img_width = box_width
         img_height = 300
 
         # 创建一个新的RGBA图像，大小为目标显示区域的尺寸
@@ -114,21 +133,38 @@ class TxtToImg:
         draw_table = ImageDraw.Draw(image)
 
         text_width, _ = draw_table.textsize('09/07', date_font)
+        
         # 文字距离右边 20 的距离
         margin = img_width - text_width - 20
+
         # 今天的日期
         locale.setlocale(locale.LC_TIME, 'zh_CN.UTF-8')
         today = date.today()
+
         # 获取星期几（0表示星期一，1表示星期二，以此类推）
         weekday = today.strftime("%A")
 
         # 获取月份和日期
         month_day = today.strftime("%m/%d")
 
-        draw_table.text(xy=(20, 330), text=f'{weekday}', fill="#000",
-                        font=date_font, spacing=lines_space)
-        draw_table.text(xy=(margin, 330), text=f'{month_day}', fill="#000",
-                        font=date_font, spacing=lines_space)
+        title_height = 330
+
+        # 以下文本占高 80
+        draw_table.text(
+            xy=(20, title_height),
+            text=f'{weekday}',
+            fill="#000",
+            font=date_font,
+            spacing=lines_space
+        )
+
+        draw_table.text(
+            xy=(margin, title_height),
+            text=f'{month_day}',
+            fill="#000",
+            font=date_font,
+            spacing=lines_space
+        )
 
         max_length = 13
         if len(nickname) > max_length:
@@ -136,7 +172,7 @@ class TxtToImg:
 
         current_time = datetime.datetime.now().time()
 
-        if current_time < datetime.time(12, 0):
+        if current_time < datetime.time(6, 0):
             time_period = "上午"
         elif current_time < datetime.time(14, 0):
             time_period = "中午"
@@ -147,19 +183,45 @@ class TxtToImg:
         else:
             time_period = "凌晨"
 
-        draw_table.text(xy=(20, 410), text=f'{time_period}好，{nickname}', fill="#000",
-                        font=title_font, spacing=lines_space)
+        # 内容文字的 x y 坐标
+        text_x = 20
+        text_y = 410
 
-        draw_table.text(xy=(20, 470), text=f'本群第 {sign_num} 位签到完成', fill="#6d786f",
-                        font=title_font, spacing=lines_space)
-        draw_table.text(xy=(20, 520), text=f'今日签到获取牛子币：+{today_gold}', fill="#6d786f",
-                        font=title_font, spacing=lines_space)
-        draw_table.text(xy=(20, 570), text=f'今日签到获取牛子值：+{today_charm}', fill="#6d786f",
-                        font=title_font, spacing=lines_space)
-        draw_table.text(xy=(20, 620), text=f'你共持有牛子币：{all_gold}', fill="#6d786f",
-                        font=title_font, spacing=lines_space)
-        draw_table.text(xy=(20, 670), text=f'当前拥有牛子值：{all_charm}', fill="#6d786f",
-                        font=title_font, spacing=lines_space)
+        draw_table.text(
+            xy=(text_x, text_y),
+            text=f'{time_period}好，{nickname}',
+            fill="#000",
+            font=title_font,
+            spacing=lines_space
+        )
+
+        # 内容文本高度为50 ，没增加一行要自增50
+        text_y += 50
+        draw_table.text(
+            xy=(text_x, text_y),
+            text=f'本群第 {sign_num} 位签到完成',
+            fill="#6d786f",
+            font=title_font,
+            spacing=lines_space
+        )
+
+        text_y += 50
+        draw_table.text(
+            xy=(text_x, text_y),
+            text=f'累计签到：{sign_times}天',
+            fill="#6d786f",
+            font=title_font,
+            spacing=lines_space
+        )
+
+        text_y += 50
+        draw_table.text(
+            xy=(text_x, text_y),
+            text=f'连续签到：{streak}天',
+            fill="#6d786f",
+            font=title_font,
+            spacing=lines_space
+        )
 
         img_byte = BytesIO()
         image.save(img_byte, format="PNG")
@@ -167,32 +229,29 @@ class TxtToImg:
         return True, img_byte
 
 
-def sign_in_2_img(
-        bg_path='',
-        nickname="",
-        sign_num=1,
-        today_gold=0,
-        all_gold=0,
-        today_charm=0,
-        all_charm=0,
-        bg_name="",
-):
+def sign_in_2_img(nickname="", sign_num=1, bg_path="", user_id=0, group_id=0, data=None,):
+    # 生成的图片名称
+    bg_name = f'{user_id}_{group_id}.jpg'
+    # 字体路径
     font_path = str(static_path / "KNMaiyuan-Regular.ttf")
+    # 签到图片获取实例
     text = TxtToImg()
+    # 如果没有背景图，随机一个
     if not bg_path:
         # 随机 1 -5
         num = random.randint(1, 5)
-
         bg_path = sgin_bg_path / f'bg-{num}.jpeg'
 
-    return text.run(
-        font_path=font_path,
-        bg_image_path=bg_path,
-        nickname=nickname,
-        sign_num=sign_num,
-        today_gold=today_gold,
-        all_gold=all_gold,
-        today_charm=today_charm,
-        all_charm=all_charm,
-        bg_name=bg_name,
-    )
+    try:
+        is_ok, sign_img_file = text.run(
+            font_path=font_path,
+            bg_image_path=bg_path,
+            nickname=nickname,
+            sign_num=sign_num,
+            bg_name=bg_name,
+            data=data,
+        )
+        return is_ok, sign_img_file
+    except Exception as e:
+        logger.error(f"签到图片生成失败: {e}")
+        return False, None

@@ -11,14 +11,7 @@ from tortoise.models import Model
 from nonebot.log import logger
 
 
-from ..config import BASE, MAX_LUCKY, MULTIPLIER ,cache_directory
-
-
-# 导入插件方法
-from nonebot_plugin_tortoise_orm import add_model
-
-#  添加模型
-add_model("src.plugins.nonebot_plugin_monopoly.models.user_model")
+from ..config import BASE, MAX_LUCKY, MULTIPLIER, cache_directory
 
 
 def download_image(url, cache_path):
@@ -39,6 +32,7 @@ def download_image(url, cache_path):
         else:
             # 处理下载失败的情况
             return None
+
 
 class SignData(BaseModel):
     """
@@ -76,7 +70,7 @@ class UserTable(Model):
     gold = fields.IntField(default=0)
     # 登录时间
     sign_times = fields.IntField(default=0)
-    # 最后登录时间 
+    # 最后登录时间
     last_sign = fields.DateField(default=date(2000, 1, 1))
     # 连续登录天数
     streak = fields.IntField(default=0)
@@ -85,7 +79,7 @@ class UserTable(Model):
 
     class Meta:
         table = "user_table"
-        table_description = " 用户表"  # 可选 
+        table_description = "用户表"  # 可选
 
     @classmethod
     async def init_user(cls, user_id: int, group_id: int, sender) -> "UserTable":
@@ -95,13 +89,13 @@ class UserTable(Model):
         )
         # 假设 sender 可以是对象或字典
         if isinstance(sender, dict):
-          # 如果 sender 是字典，直接从字典中获取 'card' 或 'nickname' 的值
-          card_value = sender.get('card', None)
-          nickname_value = sender.get('nickname', None)
+            # 如果 sender 是字典，直接从字典中获取 'card' 或 'nickname' 的值
+            card_value = sender.get('card', None)
+            nickname_value = sender.get('nickname', None)
         else:
-          # 如果 sender 是对象，尝试从对象的属性中获取 'card' 或 'nickname' 的值
-          card_value = getattr(sender, 'card', None)
-          nickname_value = getattr(sender, 'nickname', None)
+            # 如果 sender 是对象，尝试从对象的属性中获取 'card' 或 'nickname' 的值
+            card_value = getattr(sender, 'card', None)
+            nickname_value = getattr(sender, 'nickname', None)
         # 如果不存在群名片，在使用qq昵称
         record.nickname = card_value or nickname_value
         record.avatar = f"https://q1.qlogo.cn/g?b=qq&nk={user_id}&s=640"
@@ -115,11 +109,7 @@ class UserTable(Model):
         return record
 
     @classmethod
-    async def sign_in(
-        cls,
-        user_id: int,
-        group_id: int,
-    ) -> SignData:
+    async def sign_in(cls, user_id: int, group_id: int,) -> SignData:
         """
         :说明: `sign_in`
         > 添加签到记录
@@ -139,6 +129,8 @@ class UserTable(Model):
         today = date.today()
         if record.last_sign == (today - timedelta(days=1)):
             record.streak += 1
+        else:
+            record.streak = 1
 
         record.last_sign = today
 

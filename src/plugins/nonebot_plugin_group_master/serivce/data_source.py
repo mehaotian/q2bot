@@ -8,11 +8,16 @@ from ..models.user_model import UserTable
 from ..text2img.signin2img import sign_in_2_img
 from ..text2img.user2img import user2img
 
-from ..config import  cache_directory
-
+from ..config import cache_directory
 
 
 async def create_user(user_id: int, group_id: int, sender) -> Message:
+    """
+    创建用户
+    :param user_id: 用户 ID
+    :param group_id: 群组 ID
+    :return: 用户信息
+    """
     # 查询是否存在用户
     user_exists = await UserTable.filter(user_id=user_id, group_id=group_id).first()
 
@@ -58,16 +63,17 @@ async def handle_sign_in(user_id: int, group_id: int, sender) -> Message:
     )
 
     bg_img = sender_user.bg_img or ''
+
+    # 获取签到图片
     is_ok, sign_img_file = sign_in_2_img(
         nickname=sender_user.nickname,
         sign_num=sign_num,
-        today_gold=data.today_gold,
-        all_gold=data.all_gold,
-        today_charm=data.today_charm,
-        all_charm=data.all_charm,
         bg_path=bg_img,
-        bg_name=f'{user_id}_{group_id}.jpg',
+        user_id=user_id,
+        group_id=group_id,
+        data=dict(data),
     )
+
     if is_ok:
         msg = MessageSegment.image(file=sign_img_file)
     else:
@@ -128,7 +134,6 @@ async def handle_query(user_id: int, group_id: int, sender) -> Message:
     """
     # 不存在则创建用户
     await create_user(user_id, group_id, sender)
-
 
     # 获取信息
     user, _ = await UserTable.get_or_create(
