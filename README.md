@@ -9,6 +9,8 @@ nb docker build
 docker compose logs -f
 docker compose up -d
 docker compose down
+
+pip freeze > requirements.txt
 ```
 
 ## 本地运行 env
