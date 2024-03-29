@@ -133,7 +133,7 @@ class TxtToImg:
         draw_table = ImageDraw.Draw(image)
 
         text_width, _ = draw_table.textsize('09/07', date_font)
-
+        
         # 文字距离右边 20 的距离
         margin = img_width - text_width - 20
 
@@ -242,16 +242,16 @@ def sign_in_2_img(nickname="", sign_num=1, bg_path="", user_id=0, group_id=0, da
         num = random.randint(1, 5)
         bg_path = sgin_bg_path / f'bg-{num}.jpeg'
 
-    # try:
-    is_ok, sign_img_file = text.run(
-        font_path=font_path,
-        bg_image_path=bg_path,
-        nickname=nickname,
-        sign_num=sign_num,
-        bg_name=bg_name,
-        data=data,
-    )
-    return is_ok, sign_img_file
-    # except Exception as e:
-    #     logger.error(f"签到图片生成失败: {e}")
-    #     return False, None
+    try:
+        is_ok, sign_img_file = text.run(
+            font_path=font_path,
+            bg_image_path=bg_path,
+            nickname=nickname,
+            sign_num=sign_num,
+            bg_name=bg_name,
+            data=data,
+        )
+        return is_ok, sign_img_file
+    except Exception as e:
+        logger.error(f"签到图片生成失败: {e}")
+        return False, None

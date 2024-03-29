@@ -57,9 +57,9 @@ class UserTable(Model):
     # 自增 ID (Primary key)
     id = fields.IntField(pk=True, generated=True)
     # 用户 ID
-    user_id = fields.IntField()
+    user_id = fields.BigIntField()
     # 群组 ID
-    group_id = fields.IntField()
+    group_id = fields.BigIntField()
     # 昵称
     nickname = fields.CharField(max_length=255, default="")
     # 头像

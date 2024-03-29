@@ -77,9 +77,10 @@ async def handle_sign_in(user_id: int, group_id: int, sender) -> Message:
     if is_ok:
         msg = MessageSegment.image(file=sign_img_file)
     else:
-        msg_txt = f"本群第 {sign_num} 位 签到完成\n"
-        msg_txt += f"获得金币：+{data.today_gold} (总金币：{data.all_gold})\n"
-        msg_txt += f"获得牛力值：+{data.today_charm}（总牛力：{data.all_charm}）\n"
+        msg_txt = MessageSegment.at(user_id = user_id)
+        msg_txt += f"\n本群第 {sign_num} 位 签到完成\n"
+        # msg_txt += f"获得金币：+{data.today_gold} (总金币：{data.all_gold})\n"
+        # msg_txt += f"获得牛力值：+{data.today_charm}（总牛力：{data.all_charm}）\n"
         msg_txt += f"累计签到次数：{data.sign_times}\n"
         msg_txt += f"连续签到次数：{data.streak}\n"
         msg += MessageSegment.text(msg_txt)
