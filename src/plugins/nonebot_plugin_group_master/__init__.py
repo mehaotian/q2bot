@@ -45,8 +45,8 @@ sign = on_fullmatch("签到", priority=5, block=False)
 
 @sign.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
-    user_id = int(event.user_id)
-    group_id = int(event.group_id)
+    user_id = str(event.user_id)
+    group_id = str(event.group_id)
     logger.debug(f"群 group_id: 用户 {user_id} 签到")
     msg = await handle_sign_in(user_id, group_id, event.sender)
     await risk_msg(bot=bot, event=event,  msg=msg)

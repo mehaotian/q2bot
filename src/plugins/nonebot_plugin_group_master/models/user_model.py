@@ -56,10 +56,10 @@ class SignData(BaseModel):
 class UserTable(Model):
     # 自增 ID (Primary key)
     id = fields.IntField(pk=True, generated=True)
-    # 用户 ID
-    user_id = fields.BigIntField()
-    # 群组 ID
-    group_id = fields.BigIntField()
+    # 用户 ID ，使用str ，int容易超过范围
+    user_id = fields.CharField(max_length=255, default="")
+    # 群组 ID ，使用str ，int容易超过范围
+    group_id = fields.CharField(max_length=255, default="")
     # 昵称
     nickname = fields.CharField(max_length=255, default="")
     # 头像
