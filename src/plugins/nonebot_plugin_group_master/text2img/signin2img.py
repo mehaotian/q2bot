@@ -49,7 +49,9 @@ class TxtToImg:
         sign_num=1,
         bg_name="",
         data=None,
+        is_sign = False
     ) -> bytes:
+        
         """
         将文本转换为图片
         :param font_path: 字体路径
@@ -59,6 +61,8 @@ class TxtToImg:
         :param bg_name: 背景图片名称
         :param data: 签到用户数据
         """
+        print(f"data: {data}")
+
         # 累计签到数据
         sign_times = data.get('sign_times', 0)
         # 连续签到次数
@@ -74,6 +78,11 @@ class TxtToImg:
         # 整体图片的宽高
         box_width = 500
         box_height = 630
+
+        if is_sign:
+            # 如果已经签到，高度减少两行，一行50
+            box_height = 530
+
         # 这是不要背景 ，纯文字
         image = Image.new("RGBA", (box_width, box_height), '#ffffff')
         # 临时背景图路径
@@ -195,33 +204,45 @@ class TxtToImg:
             spacing=lines_space
         )
 
-        # 内容文本高度为50 ，没增加一行要自增50
-        text_y += 50
-        draw_table.text(
-            xy=(text_x, text_y),
-            text=f'本群第 {sign_num} 位签到完成',
-            fill="#6d786f",
-            font=title_font,
-            spacing=lines_space
-        )
+        if not is_sign:
+            # 内容文本高度为50 ，没增加一行要自增50
+            text_y += 50
+            draw_table.text(
+                xy=(text_x, text_y),
+                text=f'本群第 {sign_num} 位签到完成',
+                fill="#6d786f",
+                font=title_font,
+                spacing=lines_space
+            )
 
-        text_y += 50
-        draw_table.text(
-            xy=(text_x, text_y),
-            text=f'累计签到：{sign_times}天',
-            fill="#6d786f",
-            font=title_font,
-            spacing=lines_space
-        )
+            text_y += 50
+            draw_table.text(
+                xy=(text_x, text_y),
+                text=f'累计签到：{sign_times}天',
+                fill="#6d786f",
+                font=title_font,
+                spacing=lines_space
+            )
 
-        text_y += 50
-        draw_table.text(
-            xy=(text_x, text_y),
-            text=f'连续签到：{streak}天',
-            fill="#6d786f",
-            font=title_font,
-            spacing=lines_space
-        )
+            text_y += 50
+            draw_table.text(
+                xy=(text_x, text_y),
+                text=f'连续签到：{streak}天',
+                fill="#6d786f",
+                font=title_font,
+                spacing=lines_space
+            )
+        else:
+            # 已经签到的情况
+            # 内容文本高度为50 ，没增加一行要自增50
+            text_y += 50
+            draw_table.text(
+                xy=(text_x, text_y),
+                text=f'你今天已经签到了，明天再来吧！',
+                fill="#6d786f",
+                font=title_font,
+                spacing=lines_space
+            )
 
         img_byte = BytesIO()
         image.save(img_byte, format="PNG")
@@ -229,7 +250,7 @@ class TxtToImg:
         return True, img_byte
 
 
-def sign_in_2_img(nickname="", sign_num=1, bg_path="", user_id=0, group_id=0, data=None,):
+def sign_in_2_img(nickname="", sign_num=1, bg_path="", user_id=0, group_id=0, data=None,is_sign = False):
     # 生成的图片名称
     bg_name = f'{user_id}_{group_id}.jpg'
     # 字体路径
@@ -242,6 +263,7 @@ def sign_in_2_img(nickname="", sign_num=1, bg_path="", user_id=0, group_id=0, da
         num = random.randint(1, 5)
         bg_path = sgin_bg_path / f'bg-{num}.jpeg'
 
+    
     try:
         is_ok, sign_img_file = text.run(
             font_path=font_path,
@@ -250,6 +272,7 @@ def sign_in_2_img(nickname="", sign_num=1, bg_path="", user_id=0, group_id=0, da
             sign_num=sign_num,
             bg_name=bg_name,
             data=data,
+            is_sign = is_sign
         )
         return is_ok, sign_img_file
     except Exception as e:

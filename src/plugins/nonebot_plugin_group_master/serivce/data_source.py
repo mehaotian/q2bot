@@ -2,7 +2,7 @@ from datetime import date
 import os
 from nonebot.log import logger
 from nonebot.adapters.onebot.v11 import Message, MessageSegment, GroupMessageEvent, Bot
-import requests
+import httpx
 
 from ..models.user_model import UserTable
 from ..text2img.signin2img import sign_in_2_img
@@ -49,9 +49,26 @@ async def handle_sign_in(user_id: int, group_id: int, sender) -> Message:
     logger.debug(f"last_sign: {last_sign}")
     logger.debug(f"today: {today}")
 
+    bg_img = sender_user.bg_img or ''
+
+    # TODO 暂时注释测试用，如果发现无限签到，那准时这的问题
     if today == last_sign:
+        # 获取签到图片
+        is_ok, sign_img_file = sign_in_2_img(
+            nickname=sender_user.nickname,
+            bg_path=bg_img,
+            user_id=user_id,
+            group_id=group_id,
+            data=dict(sender_user),
+            is_sign=True
+        )
+        if is_ok:
+            msg += MessageSegment.image(file=sign_img_file)
+            return msg
+        # 处理图片生成失败的情况
         msg += Message("你今天已经签到了，明天再来吧！")
         return msg
+    
 
     # 签到名次
     sign_num = await UserTable.filter(group_id=group_id, last_sign=today).count() + 1
@@ -62,7 +79,6 @@ async def handle_sign_in(user_id: int, group_id: int, sender) -> Message:
         group_id=group_id,
     )
 
-    bg_img = sender_user.bg_img or ''
 
     # 获取签到图片
     is_ok, sign_img_file = sign_in_2_img(
@@ -106,19 +122,24 @@ async def handle_change_bg(bot: Bot, user_id: int, group_id: int, message: Messa
             break  # 找到file后，中断for循环
 
     if file is not None:
-        result = await bot.call_api("get_image", file=file)
-        logger.debug(f"result: {result}")
-        file_url = result["url"]
+        print(f"file: {file}")
+        # TOTO 现在能直接拿到可显示的图片地址，不需要调用api
+        # result = await bot.call_api("get_image", file=file)
+        # logger.debug(f"result: {result}")
+        # file_url = result["url"]
+        file_url = file
         if file_url:
             user.bg_img = file_url
             await user.save(update_fields=['bg_img'])
             # 将背景保存在本地
             bg_name = f'{user_id}_{group_id}.jpg'
             cache_path = os.path.join(cache_directory, bg_name)
-            response = requests.get(file_url)
+            response = httpx.get(file_url)
             if response.status_code == 200:
                 with open(cache_path, "wb") as file:
                     file.write(response.content)
+            
+
             return True, '背景替换成功'
         else:
             return False, Message("换背景失败,请重新发送图片")
