@@ -36,11 +36,12 @@ RUN pip install --no-cache-dir gunicorn uvicorn[standard] nonebot2 \
   && pip install --no-cache-dir --no-index --force-reinstall --find-links=/wheel -r /wheel/requirements.txt && rm -rf /wheel
 COPY . /app/
 
-# Install locales package
+# Update system and install locales package
 RUN apt-get clean && apt-get update && apt-get install -y locales
 
-# Generate 'zh_CN.UTF-8' locale
-RUN locale-gen zh_CN.UTF-8
+# Uncomment 'zh_CN.UTF-8' locale for generation
+RUN sed -i -e 's/# zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen && \
+    locale-gen
 
 # Set the locale
 ENV LANG zh_CN.UTF-8
