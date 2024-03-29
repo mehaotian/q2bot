@@ -10,9 +10,13 @@ services:
       - *config-port
     env_file:
       - .env.prod
+    volumes:
+      - /home/ht/botdocker/cache_image:/cache_image
     environment:
       ENVIRONMENT: prod
       HOST: *config-host
       PORT: *config-port
       LANG: zh_CN.UTF-8
+      CACHE_DIR: /cache_image
+
     restart: always

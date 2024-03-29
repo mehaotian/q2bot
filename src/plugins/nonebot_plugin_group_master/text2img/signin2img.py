@@ -81,7 +81,7 @@ class TxtToImg:
 
         if is_sign:
             # 如果已经签到，高度减少两行，一行50
-            box_height = 530
+            box_height = 580
 
         # 这是不要背景 ，纯文字
         image = Image.new("RGBA", (box_width, box_height), '#ffffff')
@@ -243,6 +243,17 @@ class TxtToImg:
                 font=title_font,
                 spacing=lines_space
             )
+            text_y += 50
+            sgin_streak = data.get('streak', 0)
+            sign_times = data.get('sign_times', 0)
+            draw_table.text(
+                xy=(text_x, text_y),
+                text=f'您已连续签到：{sgin_streak}天，累计：{sign_times}天',
+                fill="#6d786f",
+                font=title_font,
+                spacing=lines_space
+            )
+
 
         img_byte = BytesIO()
         image.save(img_byte, format="PNG")

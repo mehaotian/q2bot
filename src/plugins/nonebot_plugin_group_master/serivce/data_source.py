@@ -6,7 +6,6 @@ import httpx
 
 from ..models.user_model import UserTable
 from ..text2img.signin2img import sign_in_2_img
-from ..text2img.user2img import user2img
 
 from ..config import cache_directory
 
@@ -133,6 +132,7 @@ async def handle_change_bg(bot: Bot, user_id: int, group_id: int, message: Messa
             await user.save(update_fields=['bg_img'])
             # 将背景保存在本地
             bg_name = f'{user_id}_{group_id}.jpg'
+            os.makedirs(cache_directory, exist_ok=True)
             cache_path = os.path.join(cache_directory, bg_name)
             response = httpx.get(file_url)
             if response.status_code == 200:

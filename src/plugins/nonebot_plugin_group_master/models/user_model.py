@@ -102,8 +102,10 @@ class UserTable(Model):
         await record.save(update_fields=["nickname", "avatar"])
 
         # 用户头像本地名称
-        avator_name = f'avator_{user_id}.jpg'
-        cache_path = os.path.join(cache_directory, avator_name)
+        avatar_name = f'avatar_{user_id}.jpg'
+        # 如果缓存文件夹不存在，则创建一个
+        os.makedirs(cache_directory, exist_ok=True)
+        cache_path = os.path.join(cache_directory, avatar_name)
         download_image(record.avatar, cache_path)
 
         return record

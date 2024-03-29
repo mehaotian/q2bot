@@ -1,6 +1,8 @@
+import os
 from nonebot import get_driver
 from pydantic import Extra, BaseModel
 from pathlib import Path
+
 
 class Config(BaseModel, extra=Extra.ignore):
     """
@@ -15,17 +17,21 @@ class Config(BaseModel, extra=Extra.ignore):
     # 最大幸运值
     daily_sign_max_lucky: int = 10
 
-current_directory =  Path(__file__).resolve().parent
+
+current_directory = Path(__file__).resolve().parent
 
 # 缓存目录
-cache_directory = Path() / "cache_image"
+# cache_directory = Path() / "cache_image"
+cache_dir = Path() / "cache_image"
+cache_directory = os.getenv('CACHE_DIR', cache_dir)
+print('----- 图片缓存路径', cache_directory)
 
 # 静态资源路径
 static_path = current_directory / "resource"
 
 text_bg_path = current_directory / "resource" / "imgs"
 
-sgin_bg_path = current_directory / "resource" / "sgin-bg-imgs" 
+sgin_bg_path = current_directory / "resource" / "sgin-bg-imgs"
 
 # 从 NoneBot 配置中解析出的插件配置
 plugin_config = Config.parse_obj(get_driver().config)
@@ -38,5 +44,3 @@ MULTIPLIER = plugin_config.daily_sign_multiplier
 
 # 最大幸运值
 MAX_LUCKY = plugin_config.daily_sign_max_lucky
-
-
