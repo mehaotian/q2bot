@@ -47,4 +47,6 @@ ENV LANG zh_CN.UTF-8
 ENV LANGUAGE zh_CN:zh
 ENV LC_ALL zh_CN.UTF-8
 
+RUN locale -a
+
 CMD ["/start.sh"]
