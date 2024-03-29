@@ -14,5 +14,5 @@ services:
       ENVIRONMENT: prod
       HOST: *config-host
       PORT: *config-port
-      LANG: zh_CN.utf8
+      LANG: zh_CN.UTF-8
     restart: always

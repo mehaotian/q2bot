@@ -31,8 +31,20 @@ COPY --from=requirements_stage /tmp/bot.py /app
 COPY ./docker/_main.py /app
 COPY --from=requirements_stage /wheel /wheel
 
+
 RUN pip install --no-cache-dir gunicorn uvicorn[standard] nonebot2 \
   && pip install --no-cache-dir --no-index --force-reinstall --find-links=/wheel -r /wheel/requirements.txt && rm -rf /wheel
 COPY . /app/
+
+# Install locales package
+RUN apt-get clean && apt-get update && apt-get install -y locales
+
+# Generate 'zh_CN.UTF-8' locale
+RUN locale-gen zh_CN.UTF-8
+
+# Set the locale
+ENV LANG zh_CN.UTF-8
+ENV LANGUAGE zh_CN:zh
+ENV LC_ALL zh_CN.UTF-8
 
 CMD ["/start.sh"]
