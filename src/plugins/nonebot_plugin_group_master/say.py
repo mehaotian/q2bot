@@ -29,7 +29,7 @@ run_say = on_message(priority=0, block=False)
 recall_run = on_notice(priority=1, block=False)
 
 # 逼话排行榜
-say = on_fullmatch("test", priority=1, block=False)
+say = on_fullmatch("逼话排行榜", priority=1, block=False)
 
 
 @say.handle()
@@ -38,6 +38,8 @@ async def say_handle(bot: Bot, event: GroupMessageEvent):
     # user_id = str(event.user_id)
     # # 获取群组ID
     # group_id = str(event.group_id)
+
+    await bot.send(event=event, message="逼话排行榜正在准备中，请稍后...")
 
     msg = await get_say_list()
     await bot.send(event=event, message=msg)
