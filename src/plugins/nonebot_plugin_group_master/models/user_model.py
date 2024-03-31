@@ -3,36 +3,14 @@ from pydantic import BaseModel
 
 from random import randint
 from datetime import date, timedelta
-import requests
 
 from tortoise import fields
 from tortoise.models import Model
 
 from nonebot.log import logger
 
-
+from ..utils import download_image
 from ..config import BASE, MAX_LUCKY, MULTIPLIER, cache_directory
-
-
-def download_image(url, cache_path):
-    """
-    下载文件并缓存
-    """
-    # 如果缓存目录不存在，则创建
-    if not os.path.exists(cache_directory):
-        os.makedirs(cache_directory)
-    logger.debug(f"缓存文件不存在: {os.path.exists(cache_path)}")
-    if not os.path.exists(cache_path):
-        logger.debug(f"缓存文件不存在: {cache_path}")
-        # 否则下载远程图片，并保存到缓存目录
-        response = requests.get(url)
-        if response.status_code == 200:
-            with open(cache_path, "wb") as file:
-                file.write(response.content)
-        else:
-            # 处理下载失败的情况
-            return None
-
 
 class SignData(BaseModel):
     """
@@ -44,9 +22,9 @@ class SignData(BaseModel):
     # 今日金币
     today_gold: int
     # 累计签到次数
-    sign_times: int
+    sign_count: int
     # 连续签到次数
-    streak: int
+    days_count: int
     # 累计魅力值
     all_charm: int
     # 今日魅力值
@@ -68,14 +46,17 @@ class UserTable(Model):
     charm = fields.IntField(default=0)
     # 金币
     gold = fields.IntField(default=0)
-    # 登录时间
-    sign_times = fields.IntField(default=0)
-    # 最后登录时间
-    last_sign = fields.DateField(default=date(2000, 1, 1))
+    # 累计登录次数
+    sign_count = fields.IntField(default=0)
+   
     # 连续登录天数
-    streak = fields.IntField(default=0)
+    days_count = fields.IntField(default=0)
     # 背景图地址
     bg_img = fields.CharField(max_length=255, default="")
+    # 登录时间
+    sign_at = fields.IntField(default=0)
+     # 最后登录时间
+    last_sign = fields.DateField(default=date(2000, 1, 1))
 
     class Meta:
         table = "user_table"
@@ -130,9 +111,9 @@ class UserTable(Model):
 
         today = date.today()
         if record.last_sign == (today - timedelta(days=1)):
-            record.streak += 1
+            record.days_count += 1
         else:
-            record.streak = 1
+            record.days_count = 1
 
         record.last_sign = today
 
@@ -140,14 +121,14 @@ class UserTable(Model):
         gold_base = BASE + randint(-MAX_LUCKY, MAX_LUCKY)
         """基础金币"""
 
-        today_gold = round(gold_base * (1 + record.streak * MULTIPLIER))
+        today_gold = round(gold_base * (1 + record.days_count * MULTIPLIER))
         """计算连续签到加成"""
 
         record.gold += today_gold
         if record.gold < 0:
             record.gold = 0
 
-        record.sign_times += 1
+        record.sign_count += 1
 
         # 魅力值
         charm_base = 10 + randint(-MAX_LUCKY, MAX_LUCKY)
@@ -156,12 +137,12 @@ class UserTable(Model):
         if record.charm < 0:
             record.charm = 0
 
-        await record.save(update_fields=["last_sign", "gold", "sign_times", "streak", "charm"])
+        await record.save(update_fields=["last_sign", "gold", "sign_count", "days_count", "charm"])
         return SignData(
             all_gold=record.gold,
             today_gold=today_gold,
-            sign_times=record.sign_times,
-            streak=record.streak,
+            sign_count=record.sign_count,
+            days_count=record.days_count,
             all_charm=record.charm,
             today_charm=charm_base,
         )

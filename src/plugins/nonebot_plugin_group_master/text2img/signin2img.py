@@ -1,41 +1,13 @@
 from io import BytesIO
 import os
 import random
-import requests
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from nonebot.log import logger
 import datetime
 from datetime import date
-import locale
 from ..config import sgin_bg_path, static_path, cache_directory
-
-
-def download_image(url, cache_path):
-    """
-    下载文件并缓存
-    """
-    # 如果缓存目录不存在，则创建
-    if not os.path.exists(cache_directory):
-        os.makedirs(cache_directory)
-
-    if os.path.exists(cache_path):
-        logger.debug(f"缓存文件已存在: {cache_path}")
-        # 如果缓存文件已存在，直接加载并返回
-        with open(cache_path, "rb") as file:
-            return Image.open(BytesIO(file.read()))
-    else:
-        logger.debug(f"缓存文件不存在: {cache_path}")
-        # 否则下载远程图片，并保存到缓存目录
-        response = requests.get(url)
-        if response.status_code == 200:
-            with open(cache_path, "wb") as file:
-                file.write(response.content)
-            return Image.open(BytesIO(response.content))
-        else:
-            # 处理下载失败的情况
-            return None
-
+from ..utils import download_image
 
 class TxtToImg:
     def __init__(self) -> None:
@@ -64,9 +36,9 @@ class TxtToImg:
         print(f"data: {data}")
 
         # 累计签到数据
-        sign_times = data.get('sign_times', 0)
+        sign_count = data.get('sign_count', 0)
         # 连续签到次数
-        streak = data.get('streak', 0)
+        days_count = data.get('days_count', 0)
 
         # 标题字体实例
         title_font = ImageFont.truetype(font_path, 32)
@@ -93,6 +65,7 @@ class TxtToImg:
             cache_path = os.path.join(cache_directory, bg_name)
             print(f"cache_path: {cache_path}")
             background_image = download_image(bg_image_path, cache_path)
+            print(f"background_image: {background_image}")
             if not background_image:
                 return False, '设置背景图失败，请重试'
         else:
@@ -147,7 +120,6 @@ class TxtToImg:
         margin = img_width - text_width - 20
 
         # 今天的日期
-        locale.setlocale(locale.LC_TIME, 'zh_CN.UTF-8')
         today = date.today()
 
         # 获取星期几（0表示星期一，1表示星期二，以此类推）
@@ -218,7 +190,7 @@ class TxtToImg:
             text_y += 50
             draw_table.text(
                 xy=(text_x, text_y),
-                text=f'累计签到：{sign_times}天',
+                text=f'累计签到：{sign_count}天',
                 fill="#6d786f",
                 font=title_font,
                 spacing=lines_space
@@ -227,7 +199,7 @@ class TxtToImg:
             text_y += 50
             draw_table.text(
                 xy=(text_x, text_y),
-                text=f'连续签到：{streak}天',
+                text=f'连续签到：{days_count}天',
                 fill="#6d786f",
                 font=title_font,
                 spacing=lines_space
@@ -244,11 +216,11 @@ class TxtToImg:
                 spacing=lines_space
             )
             text_y += 50
-            sgin_streak = data.get('streak', 0)
-            sign_times = data.get('sign_times', 0)
+            days_count = data.get('days_count', 0)
+            sign_count = data.get('sign_count', 0)
             draw_table.text(
                 xy=(text_x, text_y),
-                text=f'您已连续签到：{sgin_streak}天，累计：{sign_times}天',
+                text=f'您已连续签到：{days_count}天，累计：{sign_count}天',
                 fill="#6d786f",
                 font=title_font,
                 spacing=lines_space

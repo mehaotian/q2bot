@@ -10,14 +10,25 @@
 #     print(response.content)
 
 
-import os
-from pathlib import Path
+# import os
+# from pathlib import Path
 
-# 缓存目录
-cache_directory = Path() / "cache_image"
+# # 缓存目录
+# cache_directory = Path() / "cache_image"
 
-bg_name = f'11111_2222.jpg'
+# bg_name = f'11111_2222.jpg'
 
-cache_path = os.path.join(cache_directory, bg_name)
+# cache_path = os.path.join(cache_directory, bg_name)
 
-print(cache_path)
+# print(cache_path)
+
+from datetime import datetime
+
+current_date = datetime.now()
+timestamp = current_date.timestamp()
+
+time = int(timestamp)
+
+print(time)
+print(datetime.fromtimestamp(time))
+

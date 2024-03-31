@@ -1,3 +1,12 @@
+# python3
+# -*- coding: utf-8 -*-
+# @Time    : 2024-3-30 00:39
+# @Author  : mehaoitan
+# @Email   :  490272692@qq.com
+# @File    : welcome.py
+# @description: 群签到相关
+# @Software: VS Code
+
 
 from nonebot import on_fullmatch, on_command, on
 from nonebot.adapters.onebot.v11 import (
@@ -11,7 +20,7 @@ from nonebot.adapters import MessageTemplate
 from nonebot.typing import T_State
 
 from nonebot.log import logger
-from .serivce.data_source import (
+from .serivce.user_source import (
     create_user,
     handle_sign_in,
     handle_change_bg

@@ -4,10 +4,15 @@ from nonebot import require
 from nonebot.plugin import PluginMetadata
 from .config import Config
 from . import (
-    welcome
+    welcome,
+    say,
 )
 
-from .serivce.data_source import handle_sign_in
+from .serivce.user_source import handle_sign_in
+
+# 设置本地化
+locale.setlocale(locale.LC_TIME, 'zh_CN.UTF-8')
+
 print(locale.getlocale())
 
 
