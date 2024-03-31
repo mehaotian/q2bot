@@ -1,0 +1,24 @@
+{
+  "response": {
+    "players": [
+      {
+        "steamid": "76561198129564557",
+        "communityvisibilitystate": 3,
+        "profilestate": 1,
+        "personaname": "鹅子",
+        "commentpermission": 1,
+        "profileurl": "https://steamcommunity.com/profiles/76561198129564557/",
+        "avatar": "https://avatars.steamstatic.com/7e76b2b60bf36ef00dd534ae13dc327db6f081f6.jpg",
+        "avatarmedium": "https://avatars.steamstatic.com/7e76b2b60bf36ef00dd534ae13dc327db6f081f6_medium.jpg",
+        "avatarfull": "https://avatars.steamstatic.com/7e76b2b60bf36ef00dd534ae13dc327db6f081f6_full.jpg",
+        "avatarhash": "7e76b2b60bf36ef00dd534ae13dc327db6f081f6",
+        "lastlogoff": 1711823099,
+        "personastate": 1,
+        "realname": "昊天天",
+        "primaryclanid": "103582791465040590",
+        "timecreated": 1394793369,
+        "personastateflags": 0
+      }
+    ]
+  }
+}
