@@ -36,12 +36,12 @@ say = on_fullmatch("逼话排行榜", priority=1, block=False)
 async def say_handle(bot: Bot, event: GroupMessageEvent):
     # # 用户ID
     # user_id = str(event.user_id)
-    # # 获取群组ID
-    # group_id = str(event.group_id)
+    # 获取群组ID
+    group_id = str(event.group_id)
 
     await bot.send(event=event, message="逼话排行榜正在准备中，请稍后...")
 
-    msg = await get_say_list()
+    msg = await get_say_list(group_id)
     await bot.send(event=event, message=msg)
     # await get_user_say(user_id, group_id)
 

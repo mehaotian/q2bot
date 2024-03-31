@@ -1,7 +1,7 @@
 from datetime import date, datetime
 import os
 from nonebot.log import logger
-from nonebot.adapters.onebot.v11 import Message,MessageSegment
+from nonebot.adapters.onebot.v11 import Message, MessageSegment
 from collections import defaultdict
 from .user_source import create_user
 from ..models.user_model import UserTable
@@ -79,7 +79,7 @@ async def get_user_say(user_id: int, group_id: int) -> Message:
     # print(says_dict)
 
 
-async def get_say_list() -> list:
+async def get_say_list(group_id) -> list:
     """
     获取用户在指定时间段内的数据
     :param uid: 用户唯一ID
@@ -114,27 +114,33 @@ async def get_say_list() -> list:
         total_recall_count = sum(say['recall_count'] for say in user_says)
         # 获取用户
         user = await UserTable.get(id=user_id)
-        user_dict = {k: v for k, v in user.__dict__.items() if not k.startswith('_')}
-        aggregated_says.append({
-            'user_id': user_id,
-            'total_image_count': total_image_count,
-            'total_face_count': total_face_count,
-            'total_reply_count': total_reply_count,
-            'total_at_count': total_at_count,
-            'total_text_count': total_text_count,
-            'total_count': total_count,
-            'total_recall_count': total_recall_count,
-            "users": user_dict
-        })
+        user_group_id = user.group_id
+        # 筛选同一个群
+        if user_group_id == group_id:
+            print('user_group_id', user_group_id)
+            user_dict = {k: v for k, v in user.__dict__.items()
+                         if not k.startswith('_')}
+            aggregated_says.append({
+                'user_id': user_id,
+                'total_image_count': total_image_count,
+                'total_face_count': total_face_count,
+                'total_reply_count': total_reply_count,
+                'total_at_count': total_at_count,
+                'total_text_count': total_text_count,
+                'total_count': total_count,
+                'total_recall_count': total_recall_count,
+                "users": user_dict
+            })
 
     # 排序 ，total_image_count + total_face_count +total_reply_count + total_at_count + total_text_count +total_recall_count ，从大到小
-    aggregated_says.sort(key=lambda x: x['total_image_count'] + x['total_face_count'] + x['total_reply_count'] + x['total_at_count'] + x['total_text_count'] + x['total_recall_count'], reverse=True)
-    
-    is_ok, img_file =  say2img(data=aggregated_says)
+    aggregated_says.sort(key=lambda x: x['total_image_count'] + x['total_face_count'] + x['total_reply_count'] +
+                         x['total_at_count'] + x['total_text_count'] + x['total_recall_count'], reverse=True)
+
+    is_ok, img_file = say2img(data=aggregated_says)
     if is_ok:
-        return  MessageSegment.image(file=img_file)
+        return MessageSegment.image(file=img_file)
     else:
-        return  Message("生成失败")
+        return Message("生成失败")
     # 打印每个用户的每个字段的总数
     # for say in aggregated_says:
     #     print(f'------ User {say["user_id"]}:')
