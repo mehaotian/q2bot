@@ -126,6 +126,10 @@ async def get_say_list() -> list:
             'total_recall_count': total_recall_count,
             "users": user_dict
         })
+
+    # 排序 ，total_image_count + total_face_count +total_reply_count + total_at_count + total_text_count +total_recall_count ，从大到小
+    aggregated_says.sort(key=lambda x: x['total_image_count'] + x['total_face_count'] + x['total_reply_count'] + x['total_at_count'] + x['total_text_count'] + x['total_recall_count'], reverse=True)
+    
     is_ok, img_file =  say2img(data=aggregated_says)
     if is_ok:
         return  MessageSegment.image(file=img_file)
