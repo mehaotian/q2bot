@@ -62,9 +62,7 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     textCount = len(msgdata)
     # 每条记录
     total_count = 0
-    # print(message)
     for msg in message:
-        # print('msg.type', msg.type)
         if msg.type == "reply":
             replyCount += 1
         if msg.type == "image":
@@ -72,13 +70,11 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
         if msg.type == "face":
             facesCount += 1
         if msg.type == "at":
-            # print('msg.data', msg.data)
             user_id = msg.data.get('qq', None)
             if user_id:
                 # 如果存在则不插入
                 if user_id not in at_user_ids:
                     at_user_ids.append(user_id)
-        # print('msg', msg.data)
 
     total_count += 1
 
