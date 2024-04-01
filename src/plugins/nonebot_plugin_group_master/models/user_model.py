@@ -148,6 +148,24 @@ class UserTable(Model):
         )
 
     @classmethod
+    async def get_user(cls, user_id: int, group_id: int) -> "UserTable":
+        """
+        > 获取用户信息
+        """
+        user = await cls.filter(user_id=user_id, group_id=group_id).first()
+
+        return user
+    
+    @classmethod
+    async def get_user_says(cls, user_id: int, group_id: int) -> "UserTable":
+        """
+        > 获取用户信息,包含会话信息
+        """
+        user = await cls.filter(user_id=user_id, group_id=group_id).prefetch_related('says').first()
+
+        return user
+    
+    @classmethod
     async def get_last_sign(cls, user_id: int, group_id: int) -> date:
         """
         :说明: `get_last_sign`

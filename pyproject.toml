@@ -10,5 +10,5 @@ adapters = [
     { name = "OneBot V11", module_name = "nonebot.adapters.onebot.v11" }
 ]
 plugins = ["nonebot_plugin_tortoise_orm"]
-plugin_dirs = ["src/plugins"]
+plugin_dirs = ["src/plugins","src/api"]
 builtin_plugins = []

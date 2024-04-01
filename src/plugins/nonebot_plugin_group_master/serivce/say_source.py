@@ -7,6 +7,9 @@ from .user_source import create_user
 from ..models.user_model import UserTable
 from ..models.say_model import SayTable
 from ..text2img.say2img import say2img
+from ..text2img.card2img import card2img
+from ..utils import get_start_time
+from ..utils.txt2img import txt2img
 
 
 async def save_user_say(user_id: int, group_id: int, sender, data) -> Message:
@@ -32,7 +35,7 @@ async def save_user_say(user_id: int, group_id: int, sender, data) -> Message:
     await SayTable.save_says(uid, data)
 
 
-async def get_user_say(user_id: int, group_id: int) -> Message:
+async def get_user_say(date_str: str, user_id: str, group_id: str) -> Message:
     """
     获取用户会话
     :param user_id: 用户 ID
@@ -40,43 +43,53 @@ async def get_user_say(user_id: int, group_id: int) -> Message:
 
     :return: 用户信息
     """
-    user = await UserTable.filter(user_id=user_id, group_id=group_id).prefetch_related('says').first()
+    # 开始查询日期
+    start_date = get_start_time(date_str)
+    # 查询用户数据
+    user = await UserTable.get_user_says(user_id, group_id)
+    # 获取用户字典
+    user_dict = {k: v for k, v in user.__dict__.items()
+                 if not k.startswith('_')}
+    says = await SayTable.query_says(uid=user.id, start_time=start_date)
 
     # 数据集
-    data = {
+    total_data = {
         'image_count': 0,
         'face_count': 0,
         'reply_count': 0,
         'at_count': 0,
         'text_count': 0,
         'total_count': 0,
-        'recall_count': 0
+        'recall_count': 0,
+        'user': user_dict
     }
 
-    for say in user.says:
-        print(say.id)
-        data['image_count'] += say.image_count
-        data['face_count'] += say.face_count
-        data['reply_count'] += say.reply_count
-        data['at_count'] += say.at_count
-        data['text_count'] += say.text_count
-        data['total_count'] += say.total_count
-        data['recall_count'] += say.recall_count
+    for say in says:
+        total_data['image_count'] += say.image_count
+        total_data['face_count'] += say.face_count
+        total_data['reply_count'] += say.reply_count
+        total_data['at_count'] += say.at_count
+        total_data['text_count'] += say.text_count
+        total_data['total_count'] += say.total_count
+        total_data['recall_count'] += say.recall_count
 
-    print(data)
+    print(total_data)
+    msg = f"""
+    用户：{total_data['user']['nickname']}  
+    今日发言情况：
+    文字消息：{total_data['text_count']} 个
+    图片消息：{total_data['image_count']} 个
+    表情消息：{total_data['face_count']} 个
+    回复消息：{total_data['reply_count']} 条
+    @别人消息：{total_data['at_count']} 条
+    总消息数：{total_data['total_count']} 条
+    """
 
-    # uid = user.id
-    # print('uid',uid)
-
-    # # 今天最早的时间 ,精确到小时
-    # start_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    # print('start_time',start_time)
-
-    # says = await SayTable.query_says(uid=uid,start_time=start_time)
-    # # 将模型实例转换为字典
-    # says_dict = [say.dict() for say in says]
-
-    # print(says_dict)
+    is_ok, say_img = card2img(data=total_data)
+    if is_ok:
+        return MessageSegment.image(file=say_img)
+    else:
+        return MessageSegment.at(user_id=user_id)+Message(msg)
 
 
 async def get_say_list(group_id) -> list:
@@ -140,12 +153,3 @@ async def get_say_list(group_id) -> list:
         return MessageSegment.image(file=img_file)
     else:
         return Message("生成失败")
-    # 打印每个用户的每个字段的总数
-    # for say in aggregated_says:
-    #     print(f'------ User {say["user_id"]}:')
-    #     print(f'  Image count: {say["total_image_count"]}')
-    #     print(f'  Face count: {say["total_face_count"]}')
-    #     print(f'  Reply count: {say["total_reply_count"]}')
-    #     print(f'  At count: {say["total_at_count"]}')
-    #     print(f'  Text count: {say["total_text_count"]}')
-    #     print(f'  user: {say["users"]}')

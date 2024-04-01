@@ -1,6 +1,9 @@
 
 import httpx
 import os
+from datetime import datetime, timedelta
+from dateutil.relativedelta import relativedelta
+
 from nonebot.adapters.onebot.v11 import (
     Bot,
     MessageSegment,
@@ -12,6 +15,37 @@ from nonebot.log import logger
 from PIL import Image
 from ..config import cache_directory
 from .txt2img import txt2img
+
+
+
+def get_start_time(text):
+    """
+    获取中文日期的指定日期值
+    参数：
+    - text: 中文日期
+    """
+    now = datetime.now()
+    if text == "今日":
+        return datetime(now.year, now.month, now.day)
+    elif text == "昨天":
+        yesterday = now - timedelta(days=1)
+        return datetime(yesterday.year, yesterday.month, yesterday.day)
+    elif text == "前天":
+        day_before_yesterday = now - timedelta(days=2)
+        return datetime(day_before_yesterday.year, day_before_yesterday.month, day_before_yesterday.day)
+    elif text == "本月":
+        return datetime(now.year, now.month, 1)
+    elif text == "上个月":
+        last_month = now - relativedelta(months=1)
+        return datetime(last_month.year, last_month.month, 1)
+    elif text == "今年":
+        return datetime(now.year, 1, 1)
+    elif text == "去年":
+        return datetime(now.year - 1, 1, 1)
+    elif text == "全部":
+        return datetime.min
+    else:
+        return None
 
 
 async def risk_msg(bot: Bot, event, msg, reply=False, at_sender=False):

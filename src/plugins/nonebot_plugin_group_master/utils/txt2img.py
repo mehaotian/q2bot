@@ -135,9 +135,8 @@ class TxtToImg:
         if img_height < size*2:
             img_height = size*2
 
-        # image = Image.new("RGBA", (img_width, img_height), '#333333')
         # 这是不要背景 ，纯文字
-        image = Image.new("RGBA", (img_width, img_height), '#ffffff')
+        image = Image.new("RGBA", (img_width, img_height), (0,0,0,0))
 
         if bg_image_path:
 
@@ -180,8 +179,7 @@ def txt2img(msg: str, font_size=16, bg_path="border-1.png", size=80):
     font_path = str(static_path / "KNMaiyuan-Regular.ttf")
     text = TxtToImg()
 
-    # bg_path = text_bg_path / bg_path
-    bg_path = ''
+    bg_path = text_bg_path / bg_path
 
     return text.run(
         msg,

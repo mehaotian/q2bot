@@ -51,18 +51,15 @@ class SayTable(Model):
         :param uid: 用户唯一ID
         :param data: 数据
         """
-        print('uid',uid)
-        print('data',data)
+        logger.debug('uid',uid)
         # 获取当前时间，并调整到下一个整点
         now = datetime.now()
         next_hour = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
         # 获取当前小时的开始时间
         current_hour = now.replace(minute=0, second=0, microsecond=0)
 
-        print(current_hour)
         # 查找指定用户在当前小时内的数据
         say = await cls.filter(user_id=uid, created_at__gte=current_hour, created_at__lt=next_hour).first()
-        print(say)
         # # 如果没有数据则新增
         if not say:
             say = await cls.create(user_id=uid, **data)
@@ -95,4 +92,10 @@ class SayTable(Model):
 
         return await cls.filter(user_id=uid, created_at__gte=start_time, created_at__lt=end_time).all()
       
+    
+    async def get_detial(cls, uid, start_time) -> dict:
+        """
+        获取详情数据
+        """
+
         

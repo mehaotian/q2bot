@@ -7,11 +7,13 @@
 # @description: 逼话排行榜
 # @Software: VS Code
 
+import re
 import time
 from nonebot import (
     on_message,
     on_fullmatch,
-    on_notice
+    on_notice,
+    on_regex
 )
 from nonebot.adapters.onebot.v11 import (
     Bot,
@@ -31,6 +33,10 @@ recall_run = on_notice(priority=1, block=False)
 # 逼话排行榜
 say = on_fullmatch("逼话排行榜", priority=1, block=False)
 
+# 查询自己指定时间逼话榜详情
+query_me_reg = r"(今日|昨天|前天|本月|上个月|今年|去年|全部)逼话"
+query_me = on_regex(query_me_reg, priority=1, block=False)
+
 
 @say.handle()
 async def say_handle(bot: Bot, event: GroupMessageEvent):
@@ -39,11 +45,10 @@ async def say_handle(bot: Bot, event: GroupMessageEvent):
     # 获取群组ID
     group_id = str(event.group_id)
 
-    await bot.send(event=event, message="逼话排行榜正在准备中，请稍后...")
+    await bot.send(event=event, message="今日逼话排行榜正在准备中，请稍后...")
 
     msg = await get_say_list(group_id)
     await bot.send(event=event, message=msg)
-    # await get_user_say(user_id, group_id)
 
 
 @run_say.handle()
@@ -54,7 +59,6 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     message = event.get_message()
     msgdata = message.extract_plain_text().strip()
 
-    sub_type = event.sub_type
     imagesCount = 0
     facesCount = 0
     replyCount = 0
@@ -95,6 +99,31 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     await save_user_say(user_id, group_id, sender, data)
 
 
+@query_me.handle()
+async def query_me_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
+    # 获取消息内容
+    text = event.message.extract_plain_text().strip()
+    print(text)
+
+    # 获取群组ID
+    group_id = str(event.group_id)
+
+    # 获取用户ID
+    user_id = str(event.user_id)
+
+    # 获取匹配的月份或日期
+    match = re.match(query_me_reg, text)
+    logger.debug(f'match：{match}')
+    if match:
+        date = match.group(1)
+        # await get_says(date_str=date, group_id=group_id, user_id=user_id)
+        await bot.send(event=event, message=f"{date}逼话正在准备中，请稍后...")
+        msg = await get_user_say(date_str=date, user_id=user_id, group_id=group_id)
+
+        # 查询指定时间的逼话排行榜
+        await bot.send(event=event, message=msg)
+
+
 @recall_run.handle()
 async def recall_handle(bot: Bot, event: NoticeEvent):
     # message = event.get_message()
@@ -115,5 +144,5 @@ async def recall_handle(bot: Bot, event: NoticeEvent):
                 "recall_count": recall_count
             }
             user = await bot.get_group_member_info(group_id=group_id, user_id=user_id)
-            print('user',user)
-            await save_user_say(user_id=user_id, group_id=group_id, sender= user, data=data)
+            print('user', user)
+            await save_user_say(user_id=user_id, group_id=group_id, sender=user, data=data)
