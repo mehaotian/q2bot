@@ -88,7 +88,7 @@ def adjust_image(image_path, target_width, target_height):
     return new_img
 
 
-def header_text(text_str, date_str, image,avatar_img):
+def header_text(text_str, date_str, image, avatar_img):
     """
     绘制头部文字
     :param text: 文字
@@ -132,6 +132,11 @@ def header_text(text_str, date_str, image,avatar_img):
     # 字体行距
     lines_space = 12
 
+    # text_str 大于 13 个汉子，显示...
+    if len(text_str) > 9:
+        text_str = text_str[:9] + '...'
+
+    text_str = f'@{text_str} 的逼话'
     content_font = ImageFont.truetype(font_path, 24)
     content_width, _ = content_font.getsize(text_str)
     left_margin = (box_width - content_width) / 2
@@ -183,126 +188,78 @@ def header_text(text_str, date_str, image,avatar_img):
 
     image.paste(bg_text_img, (int(text_width + x + 15), int(y)), bg_text_img)
 
-    # avatar_img.resize((80, 80))
+    # 渲染头像到 标题中间
+    avatar_img = avatar_img.resize((60, 60))
 
-
-    # image.paste(avatar_img, (0, int(top+10)), avatar_img)
-
+    mask = Image.new('L', avatar_img.size, 0)
+    draw = ImageDraw.Draw(mask)
+    draw.ellipse((0, 0) + avatar_img.size, fill=255)
+    avatar_width, avatar_height = avatar_img.size
+    top = int(top + 25)
+    image.paste(avatar_img, ((box_width-avatar_width)//2, top), mask)
+    # 创建一个边框
+    draw = ImageDraw.Draw(image)
+    left_x = (box_width-avatar_width)//2
+    left_y = top
+    right_x = left_x + avatar_width
+    right_y = left_y + avatar_height
+    draw.ellipse((left_x, left_y, right_x, right_y), outline='#333', width=1)
 
     # 保存图像
     return image
 
 
-def content_text(data, index, height=40):
+def content_text(data, image, position):
     """
     绘制内容文字
     :param data: 数据
     :param image: 图片
     :return: 绘制后的图片
     """
-    user = data.get('users', {})
-    nickname = user.get('nickname', '')
-    total_image_count = data.get('total_image_count', 0)
-    total_face_count = data.get('total_face_count', 0)
-    total_reply_count = data.get('total_reply_count', 0)
-    total_at_count = data.get('total_at_count', 0)
-    total_text_count = data.get('total_text_count', 0)
-    total_recall_count = data.get('total_recall_count', 0)
+    x, y = position
+    total_image_count = data.get('image_count', 0)
+    total_face_count = data.get('face_count', 0)
+    total_reply_count = data.get('reply_count', 0)
+    total_at_count = data.get('at_count', 0)
+    total_text_count = data.get('text_count', 0)
+    total_recall_count = data.get('recall_count', 0)
+    total_count = data.get('total_count', 0)
 
-    total = total_image_count + total_face_count + total_reply_count + \
-        total_at_count + total_text_count + total_recall_count
+    text_data = (
+        f'你叭叭打了 {total_text_count} 个字',
+        f'库库发了 {total_image_count} 张图片',
+        f'小表情发了 {total_face_count} 个',
+        f'回复了其他人 {total_reply_count} 次',
+        f'at 了别人 {total_at_count} 次',
+        f'撤回了 {total_recall_count} 次消息',
+        f'一共发送了 {total_count} 条消息，再接再厉！',
+    )
 
     # 创建一个用于绘制的Draw对象
     width = 500
-    margin = 80
-    # 获取1的path
-    bj1_path = text_bg_path / f'jp1.png'
-    img_path = text_bg_path / f'jp0.png'
+    margin = x
+    text_img_width = width - margin * 2
 
-    if index < 3:
-        img_path = text_bg_path / f'jp{index+1}.png'
+    text_img_height = 40
 
-    # 打开图片
-    img = Image.open(img_path)
-    # 将图片转换为"RGBA"模式
-    img = img.convert("RGBA")
+    y += 5
+    for index, text in enumerate(text_data):
+        # 创建一个用于绘制的Draw对象
+        text_image = Image.new("RGBA", (text_img_width, text_img_height))
+        draw = ImageDraw.Draw(text_image)
 
-    box_img = Image.open(bj1_path)
+        # # 字体行距
+        lines_space = 12
 
-    box_original_width, box_original_height = box_img.size
-    # 计算奖牌原始图像的宽高比
-    box_aspect_ratio = box_original_width / box_original_height
-    box_height = height
-    box_width = int(box_height * box_aspect_ratio)
+        title_text = ImageFont.truetype(font_path, 20)
 
-    # 获取图片的原始宽度和高度
-    original_width, original_height = img.size
-
-    # 计算原始图像的宽高比
-    aspect_ratio = original_width / original_height
-    img_height = height
-
-    if index == 1:
-        img_height = height-5
-    elif index == 2:
-        img_height = height-10
-    else:
-        img_height = height
-
-    img_width = int(img_height * aspect_ratio)
-
-    img = img.resize((img_width, img_height))
-
-    # 创建大小
-    item_img = Image.new(
-        "RGBA", (width - margin*2, height + 10), (255, 255, 255, 0))
-
-    header_img = Image.new("RGBA", (box_width, box_height), (255, 255, 255, 0))
-
-    x = (box_width - img_width) // 2
-    y = (box_height - img_height) // 2
-    header_img.paste(img, (x, y), img)
-
-    item_img.paste(header_img, (0, 0))
-
-    # 创建一个用于绘制的Draw对象
-    draw = ImageDraw.Draw(item_img)
-
-    # # 字体行距
-    lines_space = 12
-
-    size = 20 if index < 3 else 17
-    title_text = ImageFont.truetype(font_path, size)
-
-    text = nickname
-    if index == 0:
-        text = '[逼话王] ' + text
-    sub_text = f'逼话 {total} 字'
-    # 大于 13 个汉子，显示...
-    if len(text) > 13:
-        text = text[:13] + '...'
-    if len(sub_text) > 19:
-        sub_text = sub_text[:19] + '...'
-
-    title_color = '#000' if index < 3 else '#666'
-
-    draw.text(xy=(box_width + 10, 5), text=text, fill=title_color,
-              font=title_text, spacing=lines_space)
-    title_text = ImageFont.truetype(font_path, 15)
-    draw.text(xy=(box_width + 10, 27), text=sub_text, fill="#666",
-              font=title_text, spacing=lines_space)
-
-    # 排行数字
-    if index > 2:
-        rank_text = ImageFont.truetype(font_path, 14)
-
-        font_width, font_height = rank_text.getsize(str(index+1))
-        font_x = (box_width - font_width) // 2
-        font_y = (box_height - font_height) // 2
-        draw.text(xy=(font_x, font_y-3), text=str(index+1), fill="#fff",
-                  font=rank_text, spacing=lines_space)
-
-    return item_img
+        text_width, text_height = title_text.getsize(text)
+        text_x = (text_img_width - text_width) / 2
+        text_y = (text_img_height - text_height) / 2
+        draw.text(xy=(text_x, text_y), text=text, fill='#000',
+                  font=title_text, spacing=lines_space)
+        image.paste(text_image, (margin, y))
+        y += text_img_height + 10
 
 
 class TxtToImg:
@@ -312,20 +269,20 @@ class TxtToImg:
     def run(
         self,
         data={},
+        date_str=""
     ) -> bytes:
         """将文本转换为图片"""
         bg_image_path = text_bg_path / f'bg-1.jpg'
         font = ImageFont.truetype(font_path, 14)
         lines_space = 8
         img_width = 500
-        img_height = 600
+        img_height = 620
 
         user = data.get('user', {})
         nickname = user.get('nickname', '')
         user_id = user.get('user_id', 0)
-        group_id = user.get('group_id', 0)
 
-        bg_name = f'{user_id}_{group_id}.jpg'
+        bg_name = f'avatar_{user_id}.jpg'
 
         avatar_img = get_avatar_image(user.get('avatar', ''), bg_name)
 
@@ -348,7 +305,11 @@ class TxtToImg:
         # 将调整后的图片粘贴到输出图像中，以居中显示
         output_image.paste(bg_img, (0, 0))
 
-        output_image = header_text('@大鹅子', '今日' ,output_image,avatar_img)
+        output_image = header_text(
+            nickname, date_str, output_image, avatar_img)
+
+        content_text(data, output_image, (80, 192))
+        # output_image.paste(content_img, (80, 192))
 
         image.paste(output_image, (0, 0))
 
@@ -358,9 +319,10 @@ class TxtToImg:
         return True, img_byte
 
 
-def card2img(data={}):
+def card2img(data={}, date_str=''):
     sayImg = TxtToImg()
 
     return sayImg.run(
         data=data,
+        date_str=date_str
     )

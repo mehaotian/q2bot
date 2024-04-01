@@ -80,7 +80,7 @@ class SayTable(Model):
             await cls.filter(id=say.id).update(**new_data)
 
     @classmethod
-    async def query_says(cls, uid, start_time) -> "SayTable":
+    async def query_says(cls, uid, start_time,end_time) -> "SayTable":
         """
         查询用户在指定时间段内的数据
         :param uid: 用户唯一ID
@@ -88,8 +88,6 @@ class SayTable(Model):
         :param end_time: 结束时间
         """
         # 结束时间为当前时间
-        end_time = datetime.now()
-
         return await cls.filter(user_id=uid, created_at__gte=start_time, created_at__lt=end_time).all()
       
     

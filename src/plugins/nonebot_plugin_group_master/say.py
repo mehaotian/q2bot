@@ -34,7 +34,7 @@ recall_run = on_notice(priority=1, block=False)
 say = on_fullmatch("逼话排行榜", priority=1, block=False)
 
 # 查询自己指定时间逼话榜详情
-query_me_reg = r"(今日|昨天|前天|本月|上个月|今年|去年|全部)逼话"
+query_me_reg = r"(今日|昨天|前天|本月|上月|今年|去年|全部)逼话"
 query_me = on_regex(query_me_reg, priority=1, block=False)
 
 
@@ -67,6 +67,8 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     # 每条记录
     total_count = 0
     for msg in message:
+        print('type', msg.type)
+        print('data', msg.data)
         if msg.type == "reply":
             replyCount += 1
         if msg.type == "image":
@@ -75,10 +77,13 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
             facesCount += 1
         if msg.type == "at":
             user_id = msg.data.get('qq', None)
+            print('user_id', user_id)
             if user_id:
                 # 如果存在则不插入
                 if user_id not in at_user_ids:
                     at_user_ids.append(user_id)
+            print('at_user_ids', at_user_ids)
+            
 
     total_count += 1
 

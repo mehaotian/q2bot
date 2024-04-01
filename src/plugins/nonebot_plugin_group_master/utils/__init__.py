@@ -35,7 +35,7 @@ def get_start_time(text):
         return datetime(day_before_yesterday.year, day_before_yesterday.month, day_before_yesterday.day)
     elif text == "本月":
         return datetime(now.year, now.month, 1)
-    elif text == "上个月":
+    elif text == "上月":
         last_month = now - relativedelta(months=1)
         return datetime(last_month.year, last_month.month, 1)
     elif text == "今年":
@@ -47,6 +47,36 @@ def get_start_time(text):
     else:
         return None
 
+def get_end_time(text):
+    """
+    获取中文日期的指定日期值
+    参数：
+    - text: 中文日期
+    """
+    now = datetime.now()
+    if text == "今日":
+        return datetime(now.year, now.month, now.day) + timedelta(days=1) 
+    elif text == "昨天":
+        return datetime(now.year, now.month, now.day)
+    elif text == "前天":
+        return datetime(now.year, now.month, now.day) - timedelta(days=1)
+    elif text == "本月":
+        # 本月最后一天，59:59：59
+        return datetime(now.year, now.month + 1, 1) - timedelta(seconds=1)
+    elif text == "上月":
+        # 上个月最后一天，59:59：59
+        last_month = now - relativedelta(months=1)
+        return datetime(last_month.year, last_month.month + 1, 1) - timedelta(seconds=1)
+    elif text == "今年":
+        # 今年最后一天，59:59：59
+        return datetime(now.year + 1, 1, 1) - timedelta(seconds=1)
+    elif text == "去年":
+        # 去年最后一天，59:59：59
+        return datetime(now.year, 1, 1) - timedelta(seconds=1)
+    elif text == "全部":
+        return datetime.max
+    else:
+        return None
 
 async def risk_msg(bot: Bot, event, msg, reply=False, at_sender=False):
     """

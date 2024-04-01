@@ -8,7 +8,7 @@ from ..models.user_model import UserTable
 from ..models.say_model import SayTable
 from ..text2img.say2img import say2img
 from ..text2img.card2img import card2img
-from ..utils import get_start_time
+from ..utils import get_start_time,get_end_time
 from ..utils.txt2img import txt2img
 
 
@@ -45,12 +45,16 @@ async def get_user_say(date_str: str, user_id: str, group_id: str) -> Message:
     """
     # 开始查询日期
     start_date = get_start_time(date_str)
+    end_date = get_end_time(date_str)
+
+    print('start_date', start_date)
+    print('end_date', end_date)
     # 查询用户数据
     user = await UserTable.get_user_says(user_id, group_id)
     # 获取用户字典
     user_dict = {k: v for k, v in user.__dict__.items()
                  if not k.startswith('_')}
-    says = await SayTable.query_says(uid=user.id, start_time=start_date)
+    says = await SayTable.query_says(uid=user.id, start_time=start_date, end_time=end_date)
 
     # 数据集
     total_data = {
@@ -73,19 +77,8 @@ async def get_user_say(date_str: str, user_id: str, group_id: str) -> Message:
         total_data['total_count'] += say.total_count
         total_data['recall_count'] += say.recall_count
 
-    print(total_data)
-    msg = f"""
-    用户：{total_data['user']['nickname']}  
-    今日发言情况：
-    文字消息：{total_data['text_count']} 个
-    图片消息：{total_data['image_count']} 个
-    表情消息：{total_data['face_count']} 个
-    回复消息：{total_data['reply_count']} 条
-    @别人消息：{total_data['at_count']} 条
-    总消息数：{total_data['total_count']} 条
-    """
 
-    is_ok, say_img = card2img(data=total_data)
+    is_ok, say_img = card2img(data=total_data,date_str=date_str)
     if is_ok:
         return MessageSegment.image(file=say_img)
     else:
