@@ -55,7 +55,6 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     msgdata = message.extract_plain_text().strip()
 
     sub_type = event.sub_type
-    print('sub_type', sub_type)
     imagesCount = 0
     facesCount = 0
     replyCount = 0
@@ -65,7 +64,7 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     total_count = 0
     # print(message)
     for msg in message:
-        print('msg.type', msg.type)
+        # print('msg.type', msg.type)
         if msg.type == "reply":
             replyCount += 1
         if msg.type == "image":
@@ -73,13 +72,13 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
         if msg.type == "face":
             facesCount += 1
         if msg.type == "at":
-            print('msg.data', msg.data)
+            # print('msg.data', msg.data)
             user_id = msg.data.get('qq', None)
             if user_id:
                 # 如果存在则不插入
                 if user_id not in at_user_ids:
                     at_user_ids.append(user_id)
-        print('msg', msg.data)
+        # print('msg', msg.data)
 
     total_count += 1
 
@@ -113,11 +112,8 @@ async def recall_handle(bot: Bot, event: NoticeEvent):
     group_id = str(event.group_id)
     recall_count = 0
 
-    print('--- event', event)
-    
     if message_type == "group_recall":
         if user_id == operator_id:
-            print('撤回一条消息')
             recall_count += 1
             data = {
                 "recall_count": recall_count

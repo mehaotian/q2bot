@@ -117,7 +117,6 @@ async def get_say_list(group_id) -> list:
         user_group_id = user.group_id
         # 筛选同一个群
         if user_group_id == group_id:
-            print('user_group_id', user_group_id)
             user_dict = {k: v for k, v in user.__dict__.items()
                          if not k.startswith('_')}
             aggregated_says.append({

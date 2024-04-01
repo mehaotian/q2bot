@@ -1,14 +1,9 @@
 from io import BytesIO
-import os
-import random
 from pathlib import Path
 from PIL import Image, ImageDraw, ImageFont
 from nonebot.log import logger
-import datetime
-from datetime import date
-import locale
-from ..config import text_bg_path, static_path, cache_directory
-from ..utils import download_image
+from itertools import islice
+from ..config import text_bg_path, static_path
 
 font_path = str(static_path / "KNMaiyuan-Regular.ttf")
 
@@ -320,14 +315,14 @@ class TxtToImg:
         content_height = 40
         margin_height = content_height + 10
         
-        print(data)
-        data_list = range(8)
-        for index, item in enumerate(data):
+        # 迭代次数
+        lice = 12
+        for index, item in islice(enumerate(data), lice) :
             content_img = content_text(item, index, content_height)
             output_image.paste(content_img, (margin, content_top), content_img)
             content_top += margin_height
 
-        if len(data_list) < 12:
+        if len(data) < lice:
             draw = ImageDraw.Draw(output_image)
             text = '--- 虚位以待 ---'
             font_width,_ = font.getsize(text)
