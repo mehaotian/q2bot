@@ -1,4 +1,4 @@
-from datetime import date, datetime
+from datetime import date, datetime, timedelta
 import os
 from nonebot.log import logger
 from nonebot.adapters.onebot.v11 import Message, MessageSegment
@@ -6,9 +6,10 @@ from collections import defaultdict
 from .user_source import create_user
 from ..models.user_model import UserTable
 from ..models.say_model import SayTable
+from ..models.say_stat_model import SayStatTable
 from ..text2img.say2img import say2img
 from ..text2img.card2img import card2img
-from ..utils import get_start_time,get_end_time
+from ..utils import get_start_time, get_end_time
 from ..utils.txt2img import txt2img
 
 
@@ -77,12 +78,11 @@ async def get_user_say(date_str: str, user_id: str, group_id: str) -> Message:
         total_data['total_count'] += say.total_count
         total_data['recall_count'] += say.recall_count
 
-
-    is_ok, say_img = card2img(data=total_data,date_str=date_str)
+    is_ok, say_img = card2img(data=total_data, date_str=date_str)
     if is_ok:
         return MessageSegment.image(file=say_img)
     else:
-        return MessageSegment.at(user_id=user_id)+Message(msg)
+        return '生成错误'
 
 
 async def get_say_list(group_id) -> list:
@@ -92,57 +92,40 @@ async def get_say_list(group_id) -> list:
     :param start_time: 开始时间
     :return: 数据
     """
-    now = datetime.now()
-    # next_hour = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
-    # # 获取当前小时的开始时间
-    # start_time = now.replace(minute=0, second=0, microsecond=0)
-
     # 获取今天最早的时间段
     start_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
 
-    # 获取所有满足条件的记录
-    says = await SayTable.filter(created_at__gte=start_time).values()
-
-    # 使用字典进行分组
-    grouped_says = defaultdict(list)
-    for say in says:
-        grouped_says[say['user_id']].append(say)
-
-    # 对每个用户的记录进行聚合
-    aggregated_says = []
-    for user_id, user_says in grouped_says.items():
-        total_image_count = sum(say['image_count'] for say in user_says)
-        total_face_count = sum(say['face_count'] for say in user_says)
-        total_reply_count = sum(say['reply_count'] for say in user_says)
-        total_at_count = sum(say['at_count'] for say in user_says)
-        total_text_count = sum(say['text_count'] for say in user_says)
-        total_count = sum(say['total_count'] for say in user_says)
-        total_recall_count = sum(say['recall_count'] for say in user_says)
-        # 获取用户
-        user = await UserTable.get(id=user_id)
-        user_group_id = user.group_id
-        # 筛选同一个群
-        if user_group_id == group_id:
-            user_dict = {k: v for k, v in user.__dict__.items()
-                         if not k.startswith('_')}
-            aggregated_says.append({
-                'user_id': user_id,
-                'total_image_count': total_image_count,
-                'total_face_count': total_face_count,
-                'total_reply_count': total_reply_count,
-                'total_at_count': total_at_count,
-                'total_text_count': total_text_count,
-                'total_count': total_count,
-                'total_recall_count': total_recall_count,
-                "users": user_dict
-            })
-
-    # 排序 ，total_image_count + total_face_count +total_reply_count + total_at_count + total_text_count +total_recall_count ，从大到小
-    aggregated_says.sort(key=lambda x: x['total_image_count'] + x['total_face_count'] + x['total_reply_count'] +
-                         x['total_at_count'] + x['total_text_count'] + x['total_recall_count'], reverse=True)
+    aggregated_says = await SayTable.get_the_charts(group_id, start_time)
 
     is_ok, img_file = say2img(data=aggregated_says)
     if is_ok:
         return MessageSegment.image(file=img_file)
     else:
         return Message("生成失败")
+
+
+async def get_say_total(group_id: str):
+    # 获取今天最早的时间段
+    start_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+
+    # 记录查询开始的时间
+    query_start_time = datetime.now()
+
+    # 获取排行榜
+    aggregated_says = await SayTable.get_the_charts(group_id, start_time)
+
+    # 记录查询结束的时间
+    query_end_time = datetime.now()
+
+    # 计算查询的执行时间
+    query_execution_time = query_end_time - query_start_time
+    logger.info(f"排行榜查询执行时间：{query_execution_time.total_seconds()* 1000} 秒")
+
+    # 新逼王
+    new_bking = aggregated_says[0]
+
+    new_bking_uid = new_bking['user_id']
+
+    await SayStatTable.save_bking(new_bking_uid)
+
+    return group_id

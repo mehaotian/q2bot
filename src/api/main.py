@@ -11,7 +11,7 @@ app: FastAPI = nonebot.get_app()
 
 logger.info('API 接口：加载成功')
 
-@app.get("/")
+@app.get("/api")
 async def custom_api():
     bot:Bot = get_bot()
     print(bot)

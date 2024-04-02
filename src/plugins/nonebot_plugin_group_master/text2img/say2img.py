@@ -176,15 +176,8 @@ def content_text(data, index, height=40):
     """
     user = data.get('users', {})
     nickname = user.get('nickname', '') 
-    total_image_count = data.get('total_image_count', 0)
-    total_face_count = data.get('total_face_count', 0)
-    total_reply_count = data.get('total_reply_count', 0)
-    total_at_count = data.get('total_at_count', 0)
-    total_text_count = data.get('total_text_count', 0)
-    total_recall_count = data.get('total_recall_count', 0)
-
-    total = total_image_count + total_face_count + total_reply_count + total_at_count + total_text_count +total_recall_count
-
+    # 获取总数
+    total = data.get('total', 0)
 
     # 创建一个用于绘制的Draw对象
     width = 500

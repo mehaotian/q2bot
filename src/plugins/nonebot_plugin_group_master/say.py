@@ -22,7 +22,7 @@ from nonebot.adapters.onebot.v11 import (
 )
 from nonebot.typing import T_State
 from nonebot.log import logger
-from .serivce.say_source import get_say_list, save_user_say, get_user_say
+from .serivce.say_source import get_say_list, save_user_say, get_user_say,get_say_total
 
 # 监听用户消息
 run_say = on_message(priority=0, block=False)
@@ -36,6 +36,9 @@ say = on_fullmatch("逼话排行榜", priority=1, block=False)
 # 查询自己指定时间逼话榜详情
 query_me_reg = r"(今日|昨天|前天|本月|上月|今年|去年|全部)逼话"
 query_me = on_regex(query_me_reg, priority=1, block=False)
+
+# TODO 测试逼话统计
+test = on_fullmatch("test", priority=1, block=False)
 
 
 @say.handle()
@@ -83,7 +86,6 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
                 if user_id not in at_user_ids:
                     at_user_ids.append(user_id)
             print('at_user_ids', at_user_ids)
-            
 
     total_count += 1
 
@@ -151,3 +153,13 @@ async def recall_handle(bot: Bot, event: NoticeEvent):
             user = await bot.get_group_member_info(group_id=group_id, user_id=user_id)
             print('user', user)
             await save_user_say(user_id=user_id, group_id=group_id, sender=user, data=data)
+
+
+@test.handle()
+async def test_handle(bot: Bot, event: GroupMessageEvent):
+
+    group_id = str(event.group_id)
+
+    msg = await get_say_total(group_id=group_id)
+
+    await bot.send(event=event, message=msg)

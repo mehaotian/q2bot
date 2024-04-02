@@ -245,7 +245,7 @@ def content_text(data, image, position):
     y += 5
     for index, text in enumerate(text_data):
         # 创建一个用于绘制的Draw对象
-        text_image = Image.new("RGBA", (text_img_width, text_img_height))
+        text_image = Image.new("RGBA", (text_img_width, text_img_height),'#fff')
         draw = ImageDraw.Draw(text_image)
 
         # # 字体行距

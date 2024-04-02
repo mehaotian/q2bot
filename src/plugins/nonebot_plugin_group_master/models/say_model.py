@@ -1,14 +1,14 @@
 import datetime
-import os
 from pydantic import BaseModel
+from nonebot.log import logger
 
 from random import randint
 from datetime import date, timedelta, datetime
-
+from collections import defaultdict
 from tortoise import fields
 from tortoise.models import Model
 
-from nonebot.log import logger
+from .user_model import UserTable
 
 
 class sayData(BaseModel):
@@ -51,10 +51,11 @@ class SayTable(Model):
         :param uid: 用户唯一ID
         :param data: 数据
         """
-        logger.debug('uid',uid)
+        logger.debug('uid', uid)
         # 获取当前时间，并调整到下一个整点
         now = datetime.now()
-        next_hour = (now + timedelta(hours=1)).replace(minute=0, second=0, microsecond=0)
+        next_hour = (now + timedelta(hours=1)).replace(minute=0,
+                                                       second=0, microsecond=0)
         # 获取当前小时的开始时间
         current_hour = now.replace(minute=0, second=0, microsecond=0)
 
@@ -67,7 +68,7 @@ class SayTable(Model):
             # 获取 data 中所有的keys
             keys = data.keys()
             new_data = {}
-            print('keys',keys)
+            print('keys', keys)
             # 更新数据
             for key in keys:
                 # 获取data中的值
@@ -80,7 +81,7 @@ class SayTable(Model):
             await cls.filter(id=say.id).update(**new_data)
 
     @classmethod
-    async def query_says(cls, uid, start_time,end_time) -> "SayTable":
+    async def query_says(cls, uid, start_time, end_time) -> "SayTable":
         """
         查询用户在指定时间段内的数据
         :param uid: 用户唯一ID
@@ -89,11 +90,56 @@ class SayTable(Model):
         """
         # 结束时间为当前时间
         return await cls.filter(user_id=uid, created_at__gte=start_time, created_at__lt=end_time).all()
-      
-    
-    async def get_detial(cls, uid, start_time) -> dict:
-        """
-        获取详情数据
-        """
 
-        
+    @classmethod
+    async def get_the_charts(cls, group_id, start_time) -> dict:
+        """
+        获取指定群指定时间之后所有用户的排行信息
+        """
+        # 获取一个时间段
+        # 获取所有满足条件的记录
+        says = await SayTable.filter(created_at__gte=start_time).values()
+
+        # 使用字典进行分组
+        grouped_says = defaultdict(list)
+        for say in says:
+            grouped_says[say['user_id']].append(say)
+
+        # 对每个用户的记录进行聚合
+        aggregated_says = []
+        for user_id, user_says in grouped_says.items():
+            total_image_count = sum(say['image_count'] for say in user_says)
+            total_face_count = sum(say['face_count'] for say in user_says)
+            total_reply_count = sum(say['reply_count'] for say in user_says)
+            total_at_count = sum(say['at_count'] for say in user_says)
+            total_text_count = sum(say['text_count'] for say in user_says)
+            total_count = sum(say['total_count'] for say in user_says)
+            total_recall_count = sum(say['recall_count'] for say in user_says)
+
+            total = total_image_count + total_face_count + total_reply_count + total_at_count + total_text_count +total_recall_count
+
+            # 获取用户
+            user = await UserTable.get(id=user_id)
+            user_group_id = user.group_id
+            # 筛选同一个群
+            if user_group_id == group_id:
+                user_dict = {k: v for k, v in user.__dict__.items()
+                             if not k.startswith('_')}
+                
+                aggregated_says.append({
+                    'user_id': user_id,
+                    'total_image_count': total_image_count,
+                    'total_face_count': total_face_count,
+                    'total_reply_count': total_reply_count,
+                    'total_at_count': total_at_count,
+                    'total_text_count': total_text_count,
+                    'total_count': total_count,
+                    'total_recall_count': total_recall_count,
+                    'total': total,
+                    "users": user_dict
+                })
+
+        # 排序，从大到小
+        aggregated_says.sort(key=lambda x: x['total'] , reverse=True)
+
+        return aggregated_says
