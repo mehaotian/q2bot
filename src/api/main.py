@@ -1,21 +1,16 @@
+
 import nonebot
-from nonebot import get_bot
-from nonebot.adapters.onebot.v11 import (
-    Bot,
-    Message
-)
-from fastapi import FastAPI
 from nonebot.log import logger
+from fastapi import FastAPI
+
+from .interface import (
+    users
+)
+
 
 app: FastAPI = nonebot.get_app()
 
-logger.info('API 接口：加载成功')
+# 注册用户相关接口
+app.include_router(users.router)
 
-@app.get("/api")
-async def custom_api():
-    bot:Bot = get_bot()
-    print(bot)
-    res =  await bot.send_group_msg(group_id=695239108, message=Message('Hello, world!'))
-    print(res)
-
-    return {"message": "Hello, world!"}
+logger.success('多功能群管WEB面板加载成功')

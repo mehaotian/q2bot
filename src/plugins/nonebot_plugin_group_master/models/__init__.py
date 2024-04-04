@@ -1,10 +1,11 @@
 # 导入插件方法
 from nonebot_plugin_tortoise_orm import add_model
 
-#  添加模型
+# 获取插件的根目录
+root = __name__.rpartition('.')[0]
 # 添加用户模型
-add_model("src.plugins.nonebot_plugin_group_master.models.user_model")
+add_model(f"{root}.models.user_model")
 # 添加会话模型
-add_model("src.plugins.nonebot_plugin_group_master.models.say_model")
+add_model(f"{root}.models.say_model")
 # 添加今日逼王模型
-add_model("src.plugins.nonebot_plugin_group_master.models.say_stat_model")
+add_model(f"{root}.models.say_stat_model")

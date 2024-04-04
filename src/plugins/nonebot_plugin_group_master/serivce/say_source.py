@@ -92,10 +92,12 @@ async def get_say_list(group_id) -> list:
     :param start_time: 开始时间
     :return: 数据
     """
+    now = datetime.now()
     # 获取今天最早的时间段
     start_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    end_time = datetime(now.year, now.month, now.day) + timedelta(days=1)
 
-    aggregated_says = await SayTable.get_the_charts(group_id, start_time)
+    aggregated_says = await SayTable.get_the_charts(group_id, start_time, end_time)
 
     is_ok, img_file = say2img(data=aggregated_says)
     if is_ok:
@@ -105,14 +107,20 @@ async def get_say_list(group_id) -> list:
 
 
 async def get_say_total(group_id: str):
+
+    now = datetime.now()
     # 获取今天最早的时间段
-    start_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    yesterday = now - timedelta(days=1)
+    start_time = datetime(yesterday.year, yesterday.month, yesterday.day)
+    end_time = datetime(now.year, now.month, now.day)
 
     # 记录查询开始的时间
     query_start_time = datetime.now()
 
     # 获取排行榜
-    aggregated_says = await SayTable.get_the_charts(group_id, start_time)
+    aggregated_says = await SayTable.get_the_charts(group_id, start_time, end_time)
+
+    print('aggregated_says', aggregated_says)
 
     # 记录查询结束的时间
     query_end_time = datetime.now()

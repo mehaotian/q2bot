@@ -92,13 +92,13 @@ class SayTable(Model):
         return await cls.filter(user_id=uid, created_at__gte=start_time, created_at__lt=end_time).all()
 
     @classmethod
-    async def get_the_charts(cls, group_id, start_time) -> dict:
+    async def get_the_charts(cls, group_id, start_time,end_time) -> dict:
         """
         获取指定群指定时间之后所有用户的排行信息
         """
         # 获取一个时间段
         # 获取所有满足条件的记录
-        says = await SayTable.filter(created_at__gte=start_time).values()
+        says = await SayTable.filter(created_at__gte=start_time,created_at__lte=end_time).values()
 
         # 使用字典进行分组
         grouped_says = defaultdict(list)

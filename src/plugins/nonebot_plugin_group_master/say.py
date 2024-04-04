@@ -18,10 +18,19 @@ from nonebot import (
 from nonebot.adapters.onebot.v11 import (
     Bot,
     GroupMessageEvent,
-    NoticeEvent
+    NoticeEvent,
+    ActionFailed,
 )
 from nonebot.typing import T_State
 from nonebot.log import logger
+from nonebot import require
+
+
+try:
+    scheduler = require("nonebot_plugin_apscheduler").scheduler
+except Exception:
+    scheduler = None
+
 from .serivce.say_source import get_say_list, save_user_say, get_user_say,get_say_total
 
 # 监听用户消息
@@ -163,3 +172,18 @@ async def test_handle(bot: Bot, event: GroupMessageEvent):
     msg = await get_say_total(group_id=group_id)
 
     await bot.send(event=event, message=msg)
+
+async def post_scheduler():
+    """
+    统计昨天逼王
+    """
+    group_id = '695239108'
+    logger.info("开始执行定时任务,统计昨日逼王")
+    await get_say_total(group_id=group_id)
+
+try:
+    scheduler.add_job(
+        post_scheduler, "cron", hour=0, minute=0, second=5, id="everyday_00_00_05"
+    )
+except ActionFailed as e:
+    logger.warning(f"定时任务添加失败，{repr(e)}")

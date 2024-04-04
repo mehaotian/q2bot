@@ -1,5 +1,6 @@
 aiosqlite==0.17.0
 anyio==3.7.1
+APScheduler==3.10.4
 asyncmy==0.2.8
 asyncodbc==0.1.1
 asyncpg==0.28.0
@@ -25,9 +26,10 @@ loguru==0.7.0
 msgpack==1.0.5
 multidict==6.0.4
 nonebot-adapter-onebot==2.2.4
+nonebot-plugin-apscheduler==0.4.0
 nonebot-plugin-localstore==0.5.0
 nonebot-plugin-tortoise-orm==0.1.1
-nonebot2==2.0.1
+nonebot2==2.2.1
 numpy==1.26.0
 openpyxl==3.1.2
 pandas==2.1.1
@@ -51,6 +53,7 @@ tortoise-orm==0.20.0
 tqdm==4.66.2
 typing_extensions==4.7.1
 tzdata==2023.3
+tzlocal==5.2
 urllib3==2.0.4
 uvicorn==0.23.2
 uvloop==0.17.0;sys_platform != 'win32'

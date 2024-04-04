@@ -69,7 +69,7 @@ class SayStatTable(Model):
                 today_bking_data.bking_time = bking_time + 1
                 await today_bking_data.save(update_fields=['bking_time'])
 
-        return ''
+        return bking_data
 
     @classmethod
     async def query_bking(cls, start_time, end_time):
