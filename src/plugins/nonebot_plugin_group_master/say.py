@@ -146,7 +146,12 @@ async def recall_handle(bot: Bot, event: NoticeEvent):
     # 被操作
     user_id = str(event.user_id)
     # 操作者
-    operator_id = str(event.operator_id)
+    if hasattr(event, 'operator_id'):
+        operator_id = str(event.operator_id)
+    else:
+        # Handle the case where event does not have operator_id attribute
+        operator_id = None
+    # operator_id = str(event.operator_id)
 
     message_type = event.notice_type
     user_id = str(event.user_id)
@@ -183,7 +188,8 @@ async def post_scheduler():
 
 try:
     scheduler.add_job(
-        post_scheduler, "cron", hour=0, minute=0, second=5, id="everyday_00_00_05"
+        # post_scheduler, "cron", hour=0, minute=0, second=5, id="everyday_00_00_05"
+        post_scheduler, "interval", minutes=2, id="every_2_minutes"
     )
 except ActionFailed as e:
     logger.warning(f"定时任务添加失败，{repr(e)}")

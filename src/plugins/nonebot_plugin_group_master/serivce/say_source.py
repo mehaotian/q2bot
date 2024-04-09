@@ -130,10 +130,16 @@ async def get_say_total(group_id: str):
     logger.info(f"排行榜查询执行时间：{query_execution_time.total_seconds()* 1000} 秒")
 
     # 新逼王
-    new_bking = aggregated_says[0]
+    # new_bking = aggregated_says[0]
+    if aggregated_says:
+        new_bking = aggregated_says[0]
+    
 
-    new_bking_uid = new_bking['user_id']
+        new_bking_uid = new_bking['user_id']
 
-    await SayStatTable.save_bking(new_bking_uid)
+        await SayStatTable.save_bking(new_bking_uid)
 
-    return group_id
+        return group_id
+    
+    return None
+    
