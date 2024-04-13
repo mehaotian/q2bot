@@ -6,6 +6,7 @@ from .config import Config
 from . import (
     welcome,
     say,
+    title
 )
 
 from .serivce.user_source import handle_sign_in

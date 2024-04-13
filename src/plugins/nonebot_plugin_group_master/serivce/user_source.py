@@ -1,9 +1,10 @@
-from datetime import date
 import os
-from nonebot.log import logger
-from nonebot.adapters.onebot.v11 import Message, MessageSegment, GroupMessageEvent, Bot
 import httpx
-
+from datetime import date
+from nonebot.log import logger
+from nonebot.matcher import Matcher
+from nonebot.adapters.onebot.v11 import Message, MessageSegment, GroupMessageEvent, Bot ,ActionFailed
+from typing import Union, Optional
 from ..models.user_model import UserTable
 from ..text2img.signin2img import sign_in_2_img
 
@@ -164,3 +165,24 @@ async def handle_query(user_id: int, group_id: int, sender) -> Message:
     )
 
     return ''
+async def change_s_title(bot: Bot, gid: int, uid: int, title: Optional[str]):
+    """
+    改头衔
+    # TODO pc 协议目前不支持修改头衔
+    :param bot: bot
+    :param gid: 群号
+    :param uid: 用户号
+    :param s_title: 头衔
+    """
+    try:
+        await bot.set_group_special_title(
+            group_id=gid,
+            user_id=uid,
+            special_title=title,
+            duration=-1,
+        )
+        return f'头衔修改成功：{title}'
+    except ActionFailed:
+        logger.info('权限不足')
+        return '头衔修改失败：权限不足'
+  

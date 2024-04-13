@@ -2,7 +2,7 @@ import os
 from nonebot import get_driver
 from pydantic import Extra, BaseModel
 from pathlib import Path
-
+from nonebot import get_driver
 
 class Config(BaseModel, extra=Extra.ignore):
     """
@@ -44,3 +44,6 @@ MULTIPLIER = plugin_config.daily_sign_multiplier
 
 # 最大幸运值
 MAX_LUCKY = plugin_config.daily_sign_max_lucky
+
+driver = get_driver()
+global_config = driver.config

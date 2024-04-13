@@ -8,7 +8,6 @@
 # @Software: VS Code
 
 import re
-import time
 from nonebot import (
     on_message,
     on_fullmatch,
@@ -17,7 +16,9 @@ from nonebot import (
 )
 from nonebot.adapters.onebot.v11 import (
     Bot,
+    Message,
     GroupMessageEvent,
+    MessageSegment,
     NoticeEvent,
     ActionFailed,
 )
@@ -31,7 +32,8 @@ try:
 except Exception:
     scheduler = None
 
-from .serivce.say_source import get_say_list, save_user_say, get_user_say,get_say_total
+from .serivce.say_source import get_say_list, save_user_say, get_user_say, get_say_total
+from .models.user_model import UserTable
 
 # 监听用户消息
 run_say = on_message(priority=0, block=False)
@@ -43,11 +45,11 @@ recall_run = on_notice(priority=1, block=False)
 say = on_fullmatch("逼话排行榜", priority=1, block=False)
 
 # 查询自己指定时间逼话榜详情
-query_me_reg = r"(今日|昨天|前天|本月|上月|今年|去年|全部)逼话"
+query_me_reg = r"^(今日|昨天|前天|本月|上月|今年|去年|全部)逼话$"
 query_me = on_regex(query_me_reg, priority=1, block=False)
 
-# TODO 测试逼话统计
-test = on_fullmatch("test", priority=1, block=False)
+# 更新用户昵称
+update_nickname = on_fullmatch("更新", priority=1, block=False)
 
 
 @say.handle()
@@ -61,6 +63,30 @@ async def say_handle(bot: Bot, event: GroupMessageEvent):
 
     msg = await get_say_list(group_id)
     await bot.send(event=event, message=msg)
+
+
+@update_nickname.handle()
+async def update_nickname_handle(bot: Bot, event: GroupMessageEvent):
+    # 获取用户消息
+    user_id = str(event.user_id)
+    group_id = str(event.group_id)
+    # 准备信息
+    msg = MessageSegment.at(user_id)
+
+    try:
+        user = await bot.get_group_member_info(group_id=group_id, user_id=user_id,no_cache=True)
+
+        print(user)
+        event.sender.nickname = user['nickname']
+        event.sender.card = user['card']
+        await bot.send(event=event, message=Message( msg + MessageSegment.text("\n您的数据更新中，请稍后...")))
+        record = await UserTable.init_user(user_id=user_id, group_id=group_id, sender=event.sender)
+        relpy_msg = MessageSegment.reply(event.message_id)
+        await bot.send(event=event, message=Message(relpy_msg + MessageSegment.text(f"更新成功")))
+    except Exception as e:
+        logger.error(f"更新用户信息失败，{repr(e)}")
+        await bot.send(event=event, message=Message( msg + MessageSegment.text(" 数据更新失败！")))
+
 
 
 @run_say.handle()
@@ -116,10 +142,9 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
 
 
 @query_me.handle()
-async def query_me_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
+async def query_me_handle(bot: Bot, event: GroupMessageEvent):
     # 获取消息内容
     text = event.message.extract_plain_text().strip()
-    print(text)
 
     # 获取群组ID
     group_id = str(event.group_id)
@@ -169,15 +194,6 @@ async def recall_handle(bot: Bot, event: NoticeEvent):
             await save_user_say(user_id=user_id, group_id=group_id, sender=user, data=data)
 
 
-@test.handle()
-async def test_handle(bot: Bot, event: GroupMessageEvent):
-
-    group_id = str(event.group_id)
-
-    msg = await get_say_total(group_id=group_id)
-
-    await bot.send(event=event, message=msg)
-
 async def post_scheduler():
     """
     统计昨天逼王
@@ -188,8 +204,8 @@ async def post_scheduler():
 
 try:
     scheduler.add_job(
-        # post_scheduler, "cron", hour=0, minute=0, second=5, id="everyday_00_00_05"
-        post_scheduler, "interval", minutes=2, id="every_2_minutes"
+        post_scheduler, "cron", hour=0, minute=0, second=5, id="everyday_00_00_05"
+        # post_scheduler, "interval", minutes=2, id="every_2_minutes"
     )
 except ActionFailed as e:
     logger.warning(f"定时任务添加失败，{repr(e)}")

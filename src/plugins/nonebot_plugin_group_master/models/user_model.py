@@ -38,6 +38,8 @@ class UserTable(Model):
     user_id = fields.CharField(max_length=255, default="")
     # 群组 ID ，使用str ，int容易超过范围
     group_id = fields.CharField(max_length=255, default="")
+    # 登录密钥
+    login_key = fields.CharField(max_length=255, default="")
     # 昵称
     nickname = fields.CharField(max_length=255, default="")
     # 头像
@@ -77,6 +79,8 @@ class UserTable(Model):
             # 如果 sender 是对象，尝试从对象的属性中获取 'card' 或 'nickname' 的值
             card_value = getattr(sender, 'card', None)
             nickname_value = getattr(sender, 'nickname', None)
+        print('card_value', card_value)
+        print('nickname_value', nickname_value)
         # 如果不存在群名片，在使用qq昵称
         record.nickname = card_value or nickname_value
         record.avatar = f"https://q1.qlogo.cn/g?b=qq&nk={user_id}&s=640"

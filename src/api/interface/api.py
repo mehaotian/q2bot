@@ -6,7 +6,7 @@ class users(Enum):
     定义用户相关接口
     """
     # 接口前缀
-    api = "/users"
+    api = "/api/users"
     # 注册用户
     sign_up = f"{api}/sign_up"
     # 登录

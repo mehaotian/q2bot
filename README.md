@@ -13,6 +13,15 @@ docker compose down
 pip freeze > requirements.txt
 ```
 
+## psql
+
+```shell
+# 添加一个表字段
+ALTER TABLE user_table
+ADD COLUMN email varchar(255);
+
+```
+
 ## 本地运行 env
 
 ```shell
