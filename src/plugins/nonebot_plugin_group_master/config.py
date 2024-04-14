@@ -16,6 +16,8 @@ class Config(BaseModel, extra=Extra.ignore):
     # 最大幸运值
     daily_sign_max_lucky: int = 10
 
+    steam_api_key= "CFBCDCA9ACBFDDACD0321DB2BA4BDBCB"
+
 
 current_directory = Path(__file__).resolve().parent
 
@@ -46,5 +48,4 @@ MAX_LUCKY = plugin_config.daily_sign_max_lucky
 
 steam_base_url = 'http://api.steampowered.com'
 
-driver = get_driver()
-global_config = driver.config
+global_config = plugin_config
