@@ -151,7 +151,13 @@ async def bind_steam_user(user_id: str, group_id: str, sender, steamid):
     recod = await SteamTable.save_steam(user_id, steamid)
     if recod:
         player = get_steam_user(steam_id=steamid)
+        if not player:
+            return MessageSegment.at(user_id) + " 绑定失败，未找到 Steam 用户"
+        
         player_name = player['personaname'] or player['realname']
-        msg = MessageSegment.at(user_id) + f" 绑定成功，您的 Steam 昵称为：{player_name}"
+        if not player_name:
+            return MessageSegment.at(user_id) + " 绑定失败，未找到 Steam 用户"
+
+        msg = MessageSegment.at(user_id) + f" 绑定成功，您的 Steam 昵称为：{player_name}\n请确定Steam昵称是否正确，否则请检查好友代码并更正。\n另：请你做个人，别绑别人的steam，一经发现 ，将禁用此功能。"
 
     return msg
