@@ -13,7 +13,7 @@ from ..utils import get_start_time, get_end_time
 from ..utils.txt2img import txt2img
 
 
-async def save_user_say(user_id: int, group_id: int, sender, data) -> Message:
+async def save_user_say(user_id: str, group_id: str, sender, data) -> Message:
     """
     保存用户说的话
     :param user_id: 用户 ID

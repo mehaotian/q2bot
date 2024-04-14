@@ -1,8 +1,9 @@
 import httpx
 
 # https://steamcommunity.com/profiles/76561198129564557/friends/add/
+# https://steamcommunity.com/profiles/76561199055955400/    虚的地址
 steam_key = "CFBCDCA9ACBFDDACD0321DB2BA4BDBCB"
-steam_id = "76561198129564557"
+steam_id = "76561199055955400"
 
 # # 获取用户拥有的游戏
 # owned_games_response = httpx.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={steam_key}&steamid={steam_id}&format=json")
@@ -29,6 +30,7 @@ steam_id = "76561198129564557"
 
 # data = response.json()
 
+# print(data)
 # with open('GetPlayerSummaries.json', 'w',encoding='utf-8') as f:
 #     f.write(str(data))
 
@@ -44,6 +46,7 @@ steam_id = "76561198129564557"
 # 通过自定义url获取用户steam_id
 # https://steamcommunity.com/id/2118263457
 # customURL = "2118263457"
+# customURL = "leonisaking"
 
 # response = httpx.get(f"http://api.steampowered.com/ISteamUser/ResolveVanityURL/v0001/?key={steam_key}&vanityurl={customURL}")
 
@@ -81,14 +84,35 @@ steam_id = "76561198129564557"
 
 app_id = 250820 # SteamVR
 # url = f"https://partner.steam-api.com/ISteamUser/GetFriendList/v1/?key={steam_key}&steamid={steam_id}&relationship=friends&format=json"
-url = f"https://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key={steam_key}"
-response = httpx.get(url)
 
-data = response.json()
-print(data)
 
-with open('GetSupportedAPIList.json', 'w',encoding='utf-8') as f:
-    f.write(str(data))
+# 获取当前可用的所有api
+# url = f"https://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key={steam_key}"
+# response = httpx.get(url)
+
+# data = response.json()
+# print(data)
+
+# with open('GetSupportedAPIList.json', 'w',encoding='utf-8') as f:
+#     f.write(str(data))
 
 # 获取当前ke用的所有公开api
 # https://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=CFBCDCA9ACBFDDACD0321DB2BA4BDBCB
+
+from steam.steamid import SteamID
+from steam.webapi import WebAPI
+
+# steam_id = SteamID()
+
+# steam_id = steam_id.from_url("https://steamcommunity.com/profiles/76561198929291657/")
+# code = steam_id.as_32
+# # 1095689672
+# 969025929
+# print(code)
+
+api = WebAPI(steam_key)
+steam_id = SteamID(969025929)
+jsonData = api.call('ISteamUser.GetPlayerSummaries', steamids=steam_id)
+response = jsonData['response']['players'][0]
+
+print('获取steam用户：', response)

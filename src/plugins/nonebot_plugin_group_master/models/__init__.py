@@ -9,3 +9,5 @@ add_model(f"{root}.models.user_model")
 add_model(f"{root}.models.say_model")
 # 添加今日逼王模型
 add_model(f"{root}.models.say_stat_model")
+# 添加 steam 数据库
+add_model(f"{root}.models.steam_model")

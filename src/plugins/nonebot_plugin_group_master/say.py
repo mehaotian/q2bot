@@ -105,8 +105,6 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     # 每条记录
     total_count = 0
     for msg in message:
-        print('type', msg.type)
-        print('data', msg.data)
         if msg.type == "reply":
             replyCount += 1
         if msg.type == "image":
@@ -115,12 +113,10 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
             facesCount += 1
         if msg.type == "at":
             user_id = msg.data.get('qq', None)
-            print('user_id', user_id)
             if user_id:
                 # 如果存在则不插入
                 if user_id not in at_user_ids:
                     at_user_ids.append(user_id)
-            print('at_user_ids', at_user_ids)
 
     total_count += 1
 
@@ -174,9 +170,7 @@ async def recall_handle(bot: Bot, event: NoticeEvent):
     if hasattr(event, 'operator_id'):
         operator_id = str(event.operator_id)
     else:
-        # Handle the case where event does not have operator_id attribute
         operator_id = None
-    # operator_id = str(event.operator_id)
 
     message_type = event.notice_type
     user_id = str(event.user_id)
@@ -190,7 +184,6 @@ async def recall_handle(bot: Bot, event: NoticeEvent):
                 "recall_count": recall_count
             }
             user = await bot.get_group_member_info(group_id=group_id, user_id=user_id)
-            print('user', user)
             await save_user_say(user_id=user_id, group_id=group_id, sender=user, data=data)
 
 

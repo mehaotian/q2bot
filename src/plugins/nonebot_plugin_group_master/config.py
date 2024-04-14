@@ -45,5 +45,7 @@ MULTIPLIER = plugin_config.daily_sign_multiplier
 # 最大幸运值
 MAX_LUCKY = plugin_config.daily_sign_max_lucky
 
+steam_base_url = 'http://api.steampowered.com'
+
 driver = get_driver()
 global_config = driver.config
