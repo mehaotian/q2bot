@@ -1,3 +1,5 @@
+from steam.webapi import WebAPI
+from steam.steamid import SteamID
 import httpx
 
 # https://steamcommunity.com/profiles/76561198129564557/friends/add/
@@ -8,7 +10,6 @@ steam_id = "76561199055955400"
 # # 获取用户拥有的游戏
 # owned_games_response = httpx.get(f"http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key={steam_key}&steamid={steam_id}&format=json")
 # # owned_games = owned_games_response.json().get('response').get('games')
-
 
 
 # # 获取用户最近在玩的游戏
@@ -22,7 +23,6 @@ steam_id = "76561199055955400"
 # # # 写入 json 文件中
 # with open('owned_games.json', 'w',encoding='utf-8') as f:
 #     f.write(str(data))
-
 
 
 # 获取用户资料
@@ -82,7 +82,7 @@ steam_id = "76561199055955400"
 # URL: http://api.steampowered.com/ISteamUserStats/GetPlayerAchievements/v0001/?appid={APP_ID}&key={API_KEY}&steamid={STEAM_ID}
 
 
-app_id = 250820 # SteamVR
+app_id = 250820  # SteamVR
 # url = f"https://partner.steam-api.com/ISteamUser/GetFriendList/v1/?key={steam_key}&steamid={steam_id}&relationship=friends&format=json"
 
 
@@ -99,8 +99,6 @@ app_id = 250820 # SteamVR
 # 获取当前ke用的所有公开api
 # https://api.steampowered.com/ISteamWebAPIUtil/GetSupportedAPIList/v0001/?key=CFBCDCA9ACBFDDACD0321DB2BA4BDBCB
 
-from steam.steamid import SteamID
-from steam.webapi import WebAPI
 
 # steam_id = SteamID()
 
@@ -112,7 +110,36 @@ from steam.webapi import WebAPI
 
 api = WebAPI(steam_key)
 steam_id = SteamID(969025929)
-jsonData = api.call('ISteamUser.GetPlayerSummaries', steamids=steam_id)
-response = jsonData['response']['players'][0]
 
-print('获取steam用户：', response)
+# 获取用户信息
+# jsonData = api.call('ISteamUser.GetPlayerSummaries', steamids=steam_id)
+# response = jsonData['response']['players'][0]
+
+# print('获取steam用户：', response)
+
+# 获取用户最新游戏
+# jsonData = api.call('IPlayerService.GetRecentlyPlayedGames',
+#                     steamid=steam_id, count=20, format='json',l='schinese')
+# # 获取游戏略缩图
+# # http://media.steampowered.com/steamcommunity/public/images/apps/{appid}/{img_icon_url}.jpg
+
+# print('获取用户最新游戏：', jsonData)
+
+#获取特定游戏的成就
+jsonData = api.call('ISteamUserStats.GetPlayerAchievements', steamid=steam_id, appid=251570)
+
+print('获取特定游戏的成就：', jsonData)
+with open('GetPlayerAchievements.json', 'w',encoding='utf-8') as f:
+    f.write(str(jsonData))
+
+
+# 获取特定游戏的统计书籍
+# jsonData = api.call('ISteamUserStats.GetUserStatsForGame', steamid=steam_id, appid=251570)
+
+# print('获取特定游戏的统计数据：', jsonData)
+ 
+# gameData = api.call('ISteamUserStats.GetSchemaForGame', appid=251570, steamid = steam_id, l='schinese')
+# print('获取特定游戏的统计数据：', gameData)
+
+# with open('GetSchemaForGame.json', 'w',encoding='utf-8') as f:
+#     f.write(str(gameData))

@@ -1,22 +1,146 @@
 {
   "response": {
-    "players": [
+    "total_count": 24,
+    "games": [
       {
-        "steamid": "76561199055955400",
-        "communityvisibilitystate": 3,
-        "profilestate": 1,
-        "personaname": "木乃伊",
-        "profileurl": "https://steamcommunity.com/profiles/76561199055955400/",
-        "avatar": "https://avatars.steamstatic.com/02824a7f6e98b080c3dafb134741aa49609895c0.jpg",
-        "avatarmedium": "https://avatars.steamstatic.com/02824a7f6e98b080c3dafb134741aa49609895c0_medium.jpg",
-        "avatarfull": "https://avatars.steamstatic.com/02824a7f6e98b080c3dafb134741aa49609895c0_full.jpg",
-        "avatarhash": "02824a7f6e98b080c3dafb134741aa49609895c0",
-        "lastlogoff": 1713081348,
-        "personastate": 1,
-        "realname": "无",
-        "primaryclanid": "103582791429521408",
-        "timecreated": 1589014950,
-        "personastateflags": 0
+        "appid": 251570,
+        "name": "7 Days to Die",
+        "playtime_2weeks": 1030,
+        "playtime_forever": 1109,
+        "img_icon_url": "f6515dd177b2992aebcb563151fbe836a600f364"
+      },
+      {
+        "appid": 1172470,
+        "name": "Apex Legends",
+        "playtime_2weeks": 574,
+        "playtime_forever": 1618,
+        "img_icon_url": "070902d2389878ac4bf29efb5b92832c60bdf24e"
+      },
+      {
+        "appid": 686810,
+        "name": "Hell Let Loose",
+        "playtime_2weeks": 414,
+        "playtime_forever": 11418,
+        "img_icon_url": "34a4b24b1132045d8e59e56b9c24bed725af55c7"
+      },
+      {
+        "appid": 1566690,
+        "name": "Outpost: Infinity Siege",
+        "playtime_2weeks": 306,
+        "playtime_forever": 306,
+        "img_icon_url": "3306a61bd0f1456aca256ea26e2371f724ae4c43"
+      },
+      {
+        "appid": 962130,
+        "name": "Grounded",
+        "playtime_2weeks": 224,
+        "playtime_forever": 224,
+        "img_icon_url": "0e598fd0dc10e3d85e5f244c62d0c41e4c8d96cc"
+      },
+      {
+        "appid": 1238810,
+        "name": "Battlefield™ V",
+        "playtime_2weeks": 139,
+        "playtime_forever": 539,
+        "img_icon_url": "23ded6a957b5ec7525679c2e7bdac90c0653dbc8"
+      },
+      {
+        "appid": 880940,
+        "name": "Pummel Party",
+        "playtime_2weeks": 138,
+        "playtime_forever": 138,
+        "img_icon_url": "b2261da6c4f14808955181d9b41fdc242685a325"
+      },
+      {
+        "appid": 2881650,
+        "name": "Content Warning",
+        "playtime_2weeks": 116,
+        "playtime_forever": 116,
+        "img_icon_url": "513cf7f2e22c94f4372369e29bffccc4c239e9c0"
+      },
+      {
+        "appid": 413150,
+        "name": "Stardew Valley",
+        "playtime_2weeks": 115,
+        "playtime_forever": 270,
+        "img_icon_url": "35d1377200084a4034238c05b0c8930451e2fb40"
+      },
+      {
+        "appid": 1943950,
+        "name": "Escape the Backrooms",
+        "playtime_2weeks": 102,
+        "playtime_forever": 102,
+        "img_icon_url": "2bd4431dd3b71ea7fd11cbcef9594f0d09e4079d"
+      },
+      {
+        "appid": 550,
+        "name": "Left 4 Dead 2",
+        "playtime_2weeks": 94,
+        "playtime_forever": 2938,
+        "img_icon_url": "7d5a243f9500d2f8467312822f8af2a2928777ed"
+      },
+      {
+        "appid": 1568590,
+        "name": "Goose Goose Duck",
+        "playtime_2weeks": 91,
+        "playtime_forever": 91,
+        "img_icon_url": "3b802d5010d6d5d72c93a8565b260c6042cc9390"
+      },
+      {
+        "appid": 322330,
+        "name": "Don't Starve Together",
+        "playtime_2weeks": 78,
+        "playtime_forever": 78,
+        "img_icon_url": "a80aa6cff8eebc1cbc18c367d9ab063e1553b0ee"
+      },
+      {
+        "appid": 559650,
+        "name": "Witch It",
+        "playtime_2weeks": 77,
+        "playtime_forever": 77,
+        "img_icon_url": "8482ea1b7e6fb1c69d306e653a85f98c6a9e4407"
+      },
+      {
+        "appid": 1203220,
+        "name": "NARAKA: BLADEPOINT",
+        "playtime_2weeks": 67,
+        "playtime_forever": 210,
+        "img_icon_url": "8055e7baa81ce2084d7daa42233983967956abb0"
+      },
+      {
+        "appid": 1435790,
+        "name": "Escape Simulator",
+        "playtime_2weeks": 50,
+        "playtime_forever": 50,
+        "img_icon_url": "6c294463e2be859160824246e2123a08afce83c4"
+      },
+      {
+        "appid": 1426210,
+        "name": "It Takes Two",
+        "playtime_2weeks": 37,
+        "playtime_forever": 212,
+        "img_icon_url": "6b15f6d81c4fc52056f4928b363b7fac591a945b"
+      },
+      {
+        "appid": 493520,
+        "name": "GTFO",
+        "playtime_2weeks": 21,
+        "playtime_forever": 21,
+        "img_icon_url": "c211299ef6127057dfe0271626bb044e79c28f78"
+      },
+      {
+        "appid": 563560,
+        "name": "Alien Swarm: Reactive Drop",
+        "playtime_2weeks": 20,
+        "playtime_forever": 20,
+        "img_icon_url": "3f30d5d196532aa1d79dbf133f067a38769178dc"
+      },
+      {
+        "appid": 105600,
+        "name": "Terraria",
+        "playtime_2weeks": 14,
+        "playtime_forever": 14,
+        "img_icon_url": "858961e95fbf869f136e1770d586e0caefd4cfac"
       }
     ]
   }
