@@ -1,5 +1,4 @@
 import os
-from nonebot import get_driver
 from pydantic import Extra, BaseModel
 from pathlib import Path
 from nonebot import get_driver
