@@ -7,7 +7,7 @@ from tortoise.models import Model
 from nonebot.log import logger
 
 
-class RewardRable(Model):
+class RewardTable(Model):
     """
     发起抽奖记录表
     """
@@ -28,8 +28,8 @@ class RewardRable(Model):
     type = fields.IntField(default=0)
     # 开奖时间 ，如果type 为1 ,未满足时按开奖时间
     open_time = fields.DatetimeField(null=True)
-    # 开奖人数
-    open_number = fields.IntField(default=0)
+    # # 开奖人数
+    # open_number = fields.IntField(default=0)
 
     # 中奖份数
     win_number = fields.IntField(default=0)
