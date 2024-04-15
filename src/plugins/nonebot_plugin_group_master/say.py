@@ -191,7 +191,8 @@ async def post_scheduler():
     """
     统计昨天逼王
     """
-    group_id = '695239108'
+    # 正经交流群 qq 号 ，目前写死
+    group_id = '596464232'
     logger.info("开始执行定时任务,统计昨日逼王")
     await get_say_total(group_id=group_id)
 
