@@ -143,3 +143,14 @@ with open('GetPlayerAchievements.json', 'w',encoding='utf-8') as f:
 
 # with open('GetSchemaForGame.json', 'w',encoding='utf-8') as f:
 #     f.write(str(gameData))
+
+
+# 获取游戏详情
+# https://store.steampowered.com/api/appdetails/?appids=
+appid = 251570
+url = f"https://store.steampowered.com/api/appdetails/?appids={appid}"
+header = {
+    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+}
+response = httpx.get(url,headers=header)
+print(response.json())
