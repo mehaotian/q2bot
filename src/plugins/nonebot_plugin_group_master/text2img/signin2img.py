@@ -154,15 +154,15 @@ class TxtToImg:
         current_time = datetime.datetime.now().time()
 
         if current_time < datetime.time(6, 0):
+            time_period = "凌晨"
+        elif current_time < datetime.time(12, 0):
             time_period = "上午"
         elif current_time < datetime.time(14, 0):
             time_period = "中午"
         elif current_time < datetime.time(18, 0):
             time_period = "下午"
-        elif current_time < datetime.time(22, 0):
-            time_period = "晚上"
         else:
-            time_period = "凌晨"
+            time_period = "晚上"
 
         # 内容文字的 x y 坐标
         text_x = 20
