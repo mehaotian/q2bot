@@ -6,7 +6,8 @@ from .config import Config
 from . import (
     welcome,
     say,
-    steam
+    steam,
+    lottery
 )
 
 from .serivce.user_source import handle_sign_in

@@ -1,3 +1,6 @@
+import random
+import string
+
 from pydantic import BaseModel
 from datetime import date, datetime, timedelta
 
@@ -5,6 +8,7 @@ from tortoise import fields
 from tortoise.models import Model
 
 from nonebot.log import logger
+from .user_model import UserTable
 
 
 class RewardTable(Model):
@@ -36,10 +40,24 @@ class RewardTable(Model):
     # 抽奖状态 ，0 未开始，1 进行中，2 已结束
     status = fields.IntField(default=0)
 
-
     # 创建时间
     created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
         table = "reward_table"
         table_description = "发起抽奖记录表"  # 可选
+
+    @classmethod
+    async def create_reward(cls, uid: str, gid: str) -> list:
+        """
+        创建抽奖
+        """
+        # 生成一个6位的数字+字母的码，用于抽奖链接
+        code = ''.join(random.choice(string.ascii_letters + string.digits)
+                       for _ in range(6))
+        user = await UserTable.filter(user_id=uid, group_id=gid).first()
+        if user:
+            user.login_key = code
+            await user.save(update_fields=['login_key'])
+
+        return user
