@@ -13,3 +13,5 @@ add_model(f"{root}.models.say_stat_model")
 add_model(f"{root}.models.steam_model")
 # 添加抽奖模型
 add_model(f"{root}.models.reward_model")
+# 添加参与抽奖模型
+add_model(f"{root}.models.join_lottery_model")
