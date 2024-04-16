@@ -11,6 +11,11 @@
 
 from src.plugins.nonebot_plugin_group_master.models import user_model, say_model, reward_model
 
+from src.plugins.nonebot_plugin_group_master.serivce import  lottery_source
+
 UserTable = user_model.UserTable
 SayTable = say_model.SayTable
 RewardTable = reward_model.RewardTable
+
+
+open_lottery = lottery_source.open_lottery

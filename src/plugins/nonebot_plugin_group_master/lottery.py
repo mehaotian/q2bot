@@ -25,7 +25,7 @@ from nonebot.adapters import MessageTemplate
 
 
 from nonebot.log import logger
-from .serivce.lottery_source import publish_lottery, join_lottery, get_lottery_list
+from .serivce.lottery_source import publish_lottery, join_lottery, get_lottery_list,open_lottery
 from .utils import MsgText, At
 
 # 查询自己指定时间逼话榜详情
@@ -45,30 +45,32 @@ async def lottery_handle(bot: Bot, event: GroupMessageEvent):
     params = msg.split(" ")
     gid = str(event.group_id)
     uid = str(event.user_id)
+    at = MessageSegment.at(uid) + ' '
 
     # 如果第一个不存在或第一个参数不是 /抽奖 则返回错误
     if not params or params[0] != '/抽奖':
-        return await bot.send(event, "指令错误, 示例：/抽奖 [操作指令]")
+        return await bot.send(event, at + " 指令错误, 示例：/抽奖 [操作指令]")
+
+    lottery_list = await get_lottery_list(gid=gid)
 
     # 一个参数直接查询信息
     if len(params) == 1:
         await bot.send(event, "抽奖信息查询中，请稍后")
-        lottery_list = await get_lottery_list(gid=gid)
         if not lottery_list:
-            return await bot.send(event, '没有正在进行的抽奖')
+            return await bot.send(event, at + '没有正在进行的抽奖')
         msg = '正在进行的抽奖：\n'
         for i in range(len(lottery_list)):
             msg += f'{i+1}. {lottery_list[i]["title"]} (已有{lottery_list[i].get("participants",0)}人参与)\n'
 
         msg += '\n 回复「/抽奖 查询 [序号]」查询具体抽奖信息'
-        return await bot.send(event, msg)
+        return await bot.send(event, at + msg)
 
     # 指令
     command = params[1]
     # 合法指令
-    command_list = ['发布']
+    command_list = ['发布', '查询']
     if command not in command_list:
-        return await bot.send(event, f"抽奖操作指令错误，目前只支持：{command_list}")
+        return await bot.send(event, at + f"抽奖操作指令错误，目前只支持：{command_list}")
 
     if command == 'help' or command == '帮助':
         msg = (
@@ -78,13 +80,54 @@ async def lottery_handle(bot: Bot, event: GroupMessageEvent):
             f"2. 发布抽奖\n"
             f" - /抽奖 发布\n"
         )
-        return await bot.send(event=event, message=msg)
+        return await bot.send(event=event, message=at + msg)
 
-    # 查询
+    # 发布抽奖
     if command == '发布':
         msg = await publish_lottery(uid=uid, gid=gid)
-        return await bot.send(event, msg)
+        return await bot.send(event, at + msg)
 
+    # 查询抽奖
+    if command == '查询':
+
+        if len(lottery_list) > 1:
+
+            if len(params) < 3:
+                return await bot.send(event, at + Message(
+                    f'\n当前有多个正在进行的抽奖，查询示例：/抽奖 查询 [序号]\n'
+                    f'输入 「/抽奖」，查看当前正在进行的抽奖。'
+                ))
+
+            index = params[2]
+            if not index.isdigit():
+                return await bot.send(event, at + "查询抽奖信息错误，示例：/抽奖 查询 [序号]")
+
+            index = int(index) - 1
+            if index < 0 or index >= len(lottery_list):
+                return await bot.send(event, at+'抽奖序号错误')
+        elif len(lottery_list) == 1:
+            index = 0
+        else:
+            return await bot.send(event, at+'没有正在进行的抽奖')
+
+        lottery = lottery_list[index]
+        title = lottery.get('title', '')
+        join_number = lottery.get('join_number', 0)
+        open_time = lottery.get('open_time', '')
+        # 格式化时间 到分
+        open_time = open_time.strftime('%Y-%m-%d %H:%M')
+        type = lottery.get('type', 0)
+        content = lottery.get('content', '暂无内容')
+        participants = lottery.get('participants', 0)
+        msg = Message((
+            f'\n奖品名称: {title}\n',
+            f'抽奖方式: {"按时间开奖" if type == 0 else "按人数开奖"}\n',
+            f'最多参与人数: {join_number}\n' if type == 1 else '',
+            f'已参与人数: {participants}人\n',
+            f'开奖时间: {open_time}\n',
+            f'抽奖内容: \n{content}' if content else '',
+        ))
+        return await bot.send(event, at + msg)
 
 join_in = on_fullmatch('参与抽奖', priority=1, block=True)
 
@@ -150,5 +193,12 @@ async def _(bot: Bot, state: T_State, event: Event):
         return await join_in.reject('序号错误，请重新输入，或输入「取消」中断当前操作', at_sender=True)
 
     # 选择后进入
-    msg = await join_lottery(uid=uid, gid=gid, index=int(msg_text)-1)
-    return await bot.send(event, msg)
+    msg, rid = await join_lottery(uid=uid, gid=gid, index=int(msg_text)-1)
+    if not rid:
+        return await bot.send(event, msg)
+    await bot.send(event, msg)
+
+    # 参加成功后，开奖
+    await open_lottery(rid=rid)
+   
+   

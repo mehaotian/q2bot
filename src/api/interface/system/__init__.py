@@ -4,17 +4,26 @@ from nonebot import get_bot
 from nonebot.adapters.onebot.v11 import (
     Bot,
     Message,
-    MessageSegment
+    MessageSegment,
+     ActionFailed,
 )
+from nonebot import require
 from nonebot.log import logger
 from fastapi import APIRouter
 from pydantic import BaseModel
 from tortoise.exceptions import OperationalError
 
 from ...utils.responses import create_response
-from ...models.db import UserTable, RewardTable
+from ...models.db import UserTable, RewardTable,open_lottery
 
 from ..api import sys
+
+
+try:
+    scheduler = require("nonebot_plugin_apscheduler").scheduler
+except Exception:
+    scheduler = None
+
 router = APIRouter()
 
 logger.success(f'SYSTEM API 接口，加载成功')
@@ -60,10 +69,10 @@ async def lottery(item: LotteryItem):
         )
 
     # 检查传入的时间是否小于五分钟
-    if open_time - now < timedelta(minutes=5):
+    if open_time - now < timedelta(minutes=0):
         return create_response(
             ret=1,
-            message="你选择的开奖时间太近了，请选择大于5分钟的时间",
+            message="你选择的开奖时间太近了，请选择大于1分钟的时间",
         )
 
     print(open_time)
@@ -107,6 +116,20 @@ async def lottery(item: LotteryItem):
                 ret=0,
                 message="发送抽奖消息失败，但是抽奖创建成功，去群里告知大家吧！",
             )
+        
+        # 创建定时任务
+        try:
+            scheduler.add_job(
+                open_lottery,
+                "date",  # 触发器类型，"date" 表示在指定的时间只执行一次
+                run_date=open_time,  # 开奖时间
+                args=[lottery.id],  # 传递给 open_lottery 函数的参数
+                id=f"lottery_{lottery.id}",  # 任务 ID，需要确保每个任务的 ID 是唯一的
+            )
+            logger.success(f"定时任务添加成功")
+        except ActionFailed as e:
+            logger.warning(f"定时任务添加失败，{repr(e)}")
+
         return create_response(
             ret=0,
             message="创建抽奖成功，页面可以关闭了",

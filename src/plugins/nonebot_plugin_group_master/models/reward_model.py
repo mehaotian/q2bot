@@ -10,7 +10,6 @@ from tortoise.models import Model
 from nonebot.log import logger
 from .user_model import UserTable
 
-
 class RewardTable(Model):
     """
     发起抽奖记录表

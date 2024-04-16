@@ -58,3 +58,13 @@ def use_item(item_name='', a_charm=0, b_charm=0, item_bonus=0):
         return True , success_rate
     else:
         return False , success_rate
+
+def lottery_algorithm(join_number, participants):
+    """
+    抽奖算法
+    :param join_number: 最多参与人数
+    :param participants: 参与人数
+    :return: list
+    """
+    pass
+    

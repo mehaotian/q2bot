@@ -23,8 +23,11 @@ from ..config import global_config
 
 steam_key = global_config.steam_api_key
 
-api = WebAPI(steam_key)
-
+try:
+    api = WebAPI(steam_key)
+except Exception as e:
+    print(f"An error occurred: {e}")
+    api = None
 
 def get_friend_code(steam_id: str) -> str:
     """
@@ -98,7 +101,7 @@ def get_steam_user(steam_id):
 
         return response
 
-    except Exception as e:
+    except Exception as e: 
         print(f"An error occurred: {e}")
         return None
 
