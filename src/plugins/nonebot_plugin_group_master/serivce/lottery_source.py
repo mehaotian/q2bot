@@ -30,7 +30,7 @@ async def publish_lottery(uid: str, gid: str) -> Message:
 
     login_key = user.login_key
     print(login_key)
-    url = 'https://botapi.mehaotian.com/lottery?login_key=' + login_key
+    url = 'https://botapi.mehaotian.com/lottery?key=' + login_key
     at = MessageSegment.at(uid)
     msg = (
         f' 点击链接创建抽奖\n'
