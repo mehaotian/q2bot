@@ -5,7 +5,7 @@ from nonebot.adapters.onebot.v11 import (
     Bot,
     Message,
     MessageSegment,
-     ActionFailed,
+    ActionFailed,
 )
 from nonebot import require
 from nonebot.log import logger
@@ -14,7 +14,7 @@ from pydantic import BaseModel
 from tortoise.exceptions import OperationalError
 
 from ...utils.responses import create_response
-from ...models.db import UserTable, RewardTable,open_lottery
+from ...models.db import UserTable, RewardTable, open_lottery
 
 from ..api import sys
 
@@ -95,35 +95,34 @@ async def lottery(item: LotteryItem):
             ret=1,
             message="数据库操作失败，请稍后再试，或请联系鹅子处理",
         )
-
     if lottery:
-        msg = (
-            f' 抽奖创建成功\n',
+        msg = MessageSegment.text('抽奖创建成功\n奖品由 ')
+        msg += MessageSegment.at(item.uid)
+        msg += MessageSegment.text(' 提供\n')
+        msg += Message((
             f'抽奖标题: {item.title}\n',
-            f'抽奖内容: \n{item.content}' if item.content else '',
             f'抽奖类型: {"按时间开奖" if item.type == 0 else "按人数开奖"}\n',
-            f'参与人数: {item.join_number}\n' if item.type == 1 else '',
+            f'最多参与人数: {item.join_number}\n' if int(item.join_number) != 0 else '最多参与人数:不限制\n',
             f'开奖时间: {item.open_time}\n',
-            f'参与抽奖请回复 "参与抽奖"',
-        )
-        at = MessageSegment.at(user_id=int(item.uid))
-
+            f'抽奖内容: \n{item.content}\n' if item.content else '',
+            f'\n参与抽奖请回复 "参与抽奖"'
+        ))
         try:
-            await bot.send_group_msg(group_id=int(item.gid), message=Message(at + msg))
+            await bot.send_group_msg(group_id=int(item.gid), message=msg)
         except Exception as e:
             logger.error(f'发送抽奖消息失败: {e}')
             return create_response(
                 ret=0,
                 message="发送抽奖消息失败，但是抽奖创建成功，去群里告知大家吧！",
             )
-        
+
         # 创建定时任务
         try:
             scheduler.add_job(
                 open_lottery,
                 "date",  # 触发器类型，"date" 表示在指定的时间只执行一次
                 run_date=open_time,  # 开奖时间
-                args=[lottery.id],  # 传递给 open_lottery 函数的参数
+                args=[lottery.id,False],  # 传递给 open_lottery 函数的参数
                 id=f"lottery_{lottery.id}",  # 任务 ID，需要确保每个任务的 ID 是唯一的
             )
             logger.success(f"定时任务添加成功")

@@ -12,21 +12,23 @@ from steam.webapi import WebAPI
 from nonebot.adapters.onebot.v11 import (
     MessageSegment,
 )
+from nonebot.log import logger
+
 from tortoise.exceptions import DoesNotExist, MultipleObjectsReturned
 from .user_source import create_user
 from ..models.user_model import UserTable
 from ..models.steam_model import SteamTable
 
-from ..config import global_config
+from ..config import plugin_config
 
 # 获取 steam key
 
-steam_key = global_config.steam_api_key
+steam_key = plugin_config.steam_api_key
 
 try:
     api = WebAPI(steam_key)
 except Exception as e:
-    print(f"An error occurred: {e}")
+    logger.error(f"获取steam失败: {e}")
     api = None
 
 def get_friend_code(steam_id: str) -> str:
@@ -102,7 +104,7 @@ def get_steam_user(steam_id):
         return response
 
     except Exception as e: 
-        print(f"An error occurred: {e}")
+        logger.error(f"An error occurred: {e}")
         return None
 
 
@@ -132,6 +134,10 @@ async def query_steam_user(user_id: str):
         return MessageSegment.at(user_id) + " " + msg
 
     player = get_steam_user(steam_id=steam_id)
+
+    if not player:
+        return MessageSegment.at(user_id) + "未找到 Steam 用户,可能是网络波动导致。"
+
     player_name = player['personaname'] or player['realname']
 
     msg = MessageSegment.at(user_id) + (

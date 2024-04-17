@@ -1,9 +1,9 @@
 import httpx
-from ..config import steam_base_url, global_config
+from ..config import steam_base_url, plugin_config
 
 
 class SteamApi:
-    steam_key = global_config.steam_api_key
+    steam_key = plugin_config.steam_api_key
     base_url = steam_base_url
 
     def __init__(self):

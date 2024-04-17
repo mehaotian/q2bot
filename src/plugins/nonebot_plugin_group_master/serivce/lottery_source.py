@@ -22,8 +22,11 @@ from tortoise.functions import Count
 
 from ..models.reward_model import RewardTable
 from ..models.user_model import UserTable
+from ..models.steam_model import SteamTable
 from ..models.join_lottery_model import JoinLotteryTable
 from apscheduler.jobstores.base import JobLookupError
+from tortoise.exceptions import DoesNotExist
+
 from nonebot import require
 try:
     scheduler = require("nonebot_plugin_apscheduler").scheduler
@@ -55,6 +58,14 @@ async def join_lottery(uid: str, gid: str, index: int) -> Message:
     """
     参与抽奖
     """
+
+    # 必须绑定 steam 才能参与抽奖
+    try:
+        steam_record = await SteamTable.get(user_id=uid)
+    except DoesNotExist:
+        return MessageSegment.text("为了避免无效的奖品发放，请先关联 Steam 账号\n请使用 「/steam 绑定 [好友代码]」指令关联"), None
+    print('steam_record:', steam_record)
+
     lottery_list = await get_lottery_list(gid=gid)
     lottery_data = lottery_list[index]
     rid = lottery_data['id']
@@ -62,15 +73,18 @@ async def join_lottery(uid: str, gid: str, index: int) -> Message:
     # 抽奖类型
     lottery_type = lottery_data['type']
 
+    # 最多参与人数
+    join_number = lottery_data['join_number']
+    # 参与人数
+    participants = lottery_data.get('participants', 0)
     # 按人数开奖
     if lottery_type == 1:
-        # 最多参与人数
-        join_number = lottery_data['join_number']
-        # 参与人数
-        participants = lottery_data.get('participants', 0)
-
         if join_number <= participants:
             return at + MessageSegment.text(" 抽奖人数已经满了！"), None
+    else:
+        if join_lottery != 0 and join_number <= participants:
+            return at + MessageSegment.text(" 抽奖人数已经满了！"), None
+
 
     open_time = lottery_data['open_time']
     # 格式化时间 保留到分
@@ -100,7 +114,7 @@ async def join_lottery(uid: str, gid: str, index: int) -> Message:
             [
                 f"",
                 f"抽奖名称：{lottery_data['title']}",
-                f"参与人数：{str(len(user_list))}人",
+                f"已参与人数：{str(len(user_list))}人",
             ]
         )
     print('参数人数：', len(user_list))
@@ -111,11 +125,12 @@ async def join_lottery(uid: str, gid: str, index: int) -> Message:
     return msg, None
 
 
-async def open_lottery(rid: int) -> Message:
+async def open_lottery(rid: int,r_type=False) -> Message:
     """
     开奖
     参数：
         - rid: 抽奖ID
+        - r_type: 是否强制开奖
     """
     bot: Bot = get_bot()
     # 获取抽奖
@@ -141,14 +156,17 @@ async def open_lottery(rid: int) -> Message:
     now = datetime.now()
     now = now.strftime('%Y-%m-%d %H:%M')
     print('open_time:', open_time, open_time > now)
-    # 不满足开奖时间
-    if open_time > now:
-        # 按人数开奖
-        if lottery_type == 1:
-            if join_number > participants:
+
+    # type = True 为强制开奖
+    if not r_type:
+        # 不满足开奖时间
+        if open_time > now:
+            # 按人数开奖
+            if lottery_type == 1:
+                if join_number > participants:
+                    return None
+            else:
                 return None
-        else:
-            return None
 
     print('participants:', participants, type(participants))
 
@@ -176,6 +194,8 @@ async def open_lottery(rid: int) -> Message:
 
     # 创建一个列表，包含所有参与者
     lottery_pool = list(participants)
+
+    print('lottery_pool:', lottery_pool)
     winner = random.choice(lottery_pool)
     print('winner:', winner.user.nickname)
 
@@ -208,6 +228,7 @@ async def get_lottery_list(gid: str) -> list:
     # rewards = await RewardTable.filter(gid=gid, status=1).values()
     rewards = await RewardTable.filter(gid=gid, status=1).annotate(participants=Count('reward')).values(
         'id',
+        'uid',
         'title',
         'content',
         'win_number',
