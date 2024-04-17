@@ -33,7 +33,7 @@ static_path = current_directory / "resource"
 text_bg_path = current_directory / "resource" / "imgs"
 
 sgin_bg_path = current_directory / "resource" / "sgin-bg-imgs"
-print('配置项：',get_driver().config)
+
 # 从 NoneBot 配置中解析出的插件配置
 plugin_config = Config.parse_obj(get_driver().config)
 global_config = get_driver().config

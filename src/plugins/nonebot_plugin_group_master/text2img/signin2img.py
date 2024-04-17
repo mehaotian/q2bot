@@ -9,6 +9,7 @@ from datetime import date
 from ..config import sgin_bg_path, static_path, cache_directory
 from ..utils import download_image
 
+
 class TxtToImg:
     def __init__(self) -> None:
         pass
@@ -21,9 +22,8 @@ class TxtToImg:
         sign_num=1,
         bg_name="",
         data=None,
-        is_sign = False
+        is_sign=False
     ) -> bytes:
-        
         """
         将文本转换为图片
         :param font_path: 字体路径
@@ -114,34 +114,33 @@ class TxtToImg:
 
         draw_table = ImageDraw.Draw(image)
 
-        text_width, _ = draw_table.textsize('09/07', date_font)
-        
-        # 文字距离右边 20 的距离
-        margin = img_width - text_width - 20
-
         # 今天的日期
         today = date.today()
 
-        # 获取星期几（0表示星期一，1表示星期二，以此类推）
-        weekday = today.strftime("%A")
-
         # 获取月份和日期
         month_day = today.strftime("%m/%d")
+        text_width, _ = draw_table.textsize(month_day, date_font)
+
+        # 文字距离右边 20 的距离
+        margin = img_width - text_width - 20
 
         title_height = 330
+        weekdays = ["星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"]
+        # 获取星期几（0表示星期一，1表示星期二，以此类推）
+        weekday = weekdays[today.weekday()]
 
         # 以下文本占高 80
         draw_table.text(
             xy=(20, title_height),
-            text=f'{weekday}',
-            fill="#000",
+            text=weekday,
+            fill="#ff5a5f",
             font=date_font,
             spacing=lines_space
         )
 
         draw_table.text(
             xy=(margin, title_height),
-            text=f'{month_day}',
+            text=month_day,
             fill="#000",
             font=date_font,
             spacing=lines_space
@@ -226,14 +225,13 @@ class TxtToImg:
                 spacing=lines_space
             )
 
-
         img_byte = BytesIO()
         image.save(img_byte, format="PNG")
 
         return True, img_byte
 
 
-def sign_in_2_img(nickname="", sign_num=1, bg_path="", user_id=0, group_id=0, data=None,is_sign = False):
+def sign_in_2_img(nickname="", sign_num=1, bg_path="", user_id=0, group_id=0, data=None, is_sign=False):
     # 生成的图片名称
     bg_name = f'{user_id}_{group_id}.jpg'
     # 字体路径
@@ -246,7 +244,6 @@ def sign_in_2_img(nickname="", sign_num=1, bg_path="", user_id=0, group_id=0, da
         num = random.randint(1, 5)
         bg_path = sgin_bg_path / f'bg-{num}.jpeg'
 
-    
     try:
         is_ok, sign_img_file = text.run(
             font_path=font_path,
@@ -255,7 +252,7 @@ def sign_in_2_img(nickname="", sign_num=1, bg_path="", user_id=0, group_id=0, da
             sign_num=sign_num,
             bg_name=bg_name,
             data=data,
-            is_sign = is_sign
+            is_sign=is_sign
         )
         return is_ok, sign_img_file
     except Exception as e:
