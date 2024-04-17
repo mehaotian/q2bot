@@ -74,19 +74,18 @@ async def update_nickname_handle(bot: Bot, event: GroupMessageEvent):
     msg = MessageSegment.at(user_id)
 
     try:
-        user = await bot.get_group_member_info(group_id=group_id, user_id=user_id,no_cache=True)
+        user = await bot.get_group_member_info(group_id=group_id, user_id=user_id, no_cache=True)
 
         print(user)
         event.sender.nickname = user['nickname']
         event.sender.card = user['card']
-        await bot.send(event=event, message=Message( msg + MessageSegment.text("\n您的数据更新中，请稍后...")))
+        await bot.send(event=event, message=Message(msg + MessageSegment.text("\n您的数据更新中，请稍后...")))
         record = await UserTable.init_user(user_id=user_id, group_id=group_id, sender=event.sender)
         relpy_msg = MessageSegment.reply(event.message_id)
         await bot.send(event=event, message=Message(relpy_msg + MessageSegment.text(f"更新成功")))
     except Exception as e:
         logger.error(f"更新用户信息失败，{repr(e)}")
-        await bot.send(event=event, message=Message( msg + MessageSegment.text(" 数据更新失败！")))
-
+        await bot.send(event=event, message=Message(msg + MessageSegment.text(" 数据更新失败！")))
 
 
 @run_say.handle()
@@ -198,8 +197,14 @@ async def post_scheduler():
 
 try:
     scheduler.add_job(
-        post_scheduler, "cron", hour=0, minute=0, second=5, id="everyday_00_00_05"
+        post_scheduler,
+        "cron",
+        hour=0,
+        minute=0,
+        second=5,
+        id="everyday_00_00_05",
+        replace_existing=True
         # post_scheduler, "interval", minutes=2, id="every_2_minutes"
     )
 except ActionFailed as e:
-    logger.warning(f"定时任务添加失败，{repr(e)}")
+    logger.warning(f"定时任务添加失败，{repr(e)}") 
