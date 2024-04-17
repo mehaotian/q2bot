@@ -25,11 +25,11 @@ from ..config import plugin_config
 
 steam_key = plugin_config.steam_api_key
 
-try:
-    api = WebAPI(steam_key)
-except Exception as e:
-    logger.error(f"获取steam失败: {e}")
-    api = None
+# try:
+#     api = WebAPI(steam_key)
+# except Exception as e:
+#     logger.error(f"获取steam失败: {e}")
+#     api = None
 
 def get_friend_code(steam_id: str) -> str:
     """
@@ -95,7 +95,7 @@ def get_steam_user(steam_id):
     """
 
     try:
-
+        api = WebAPI(steam_key)
         jsonData = api.call('ISteamUser.GetPlayerSummaries', steamids=steam_id)
         response = jsonData['response']['players'][0]
 
@@ -161,7 +161,7 @@ async def bind_steam_user(user_id: str, group_id: str, sender, steamid):
     if recod:
         player = get_steam_user(steam_id=steamid)
         if not player:
-            return MessageSegment.at(user_id) + " 绑定失败，未找到 Steam 用户"
+            return MessageSegment.at(user_id) + " 绑定失败，未找到 Steam 用户或Steam网络波动异常"
         
         player_name = player['personaname'] or player['realname']
         if not player_name:
