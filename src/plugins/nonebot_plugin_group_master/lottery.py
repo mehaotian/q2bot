@@ -42,6 +42,7 @@ from .config import global_config
 su = global_config.superusers
 
 print('超级管理员', su)
+print('env 配置:', global_config)
 # 查询自己指定时间逼话榜详情
 lottery = on_command('抽奖', priority=1, block=True)
 
