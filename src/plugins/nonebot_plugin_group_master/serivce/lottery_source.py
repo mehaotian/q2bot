@@ -428,7 +428,7 @@ async def get_lottery_history_detail(event, gid, params):
     users = await JoinLotteryTable.get_user(rid=reward.id)
 
     winner = [user for user in users if user.status == 1]
-    winner_name = winner[0].user.nickname if winner else '无人参与'
+    winner_name = winner[0].user.nickname if winner else '无人中奖'
 
     msg = MessageSegment.text(
         f"抽奖名称：{reward.title}\n"
