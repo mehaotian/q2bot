@@ -20,7 +20,7 @@ from nonebot.log import logger
 from .utils import MsgText, At
 from .serivce.steam_source import bind_steam_user, get_steam_id, query_steam_user
 
-# 查询自己指定时间逼话榜详情
+# 查询
 steam = on_command('steam', priority=1, block=True)
 
 
