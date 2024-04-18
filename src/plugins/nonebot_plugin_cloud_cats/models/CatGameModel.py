@@ -23,6 +23,11 @@ class CatGameTable(Model):
     user_id = fields.CharField(max_length=255, default="")
     # 群组 ID ，使用str ，int容易超过范围
     group_id = fields.CharField(max_length=255, default="")
+    # 游戏状态 , 0 游戏未进行 1 游戏进行中
+    status = fields.IntField(default=0)
+    
+    # 创建时间
+    created_at = fields.DatetimeField(auto_now_add=True)
 
     class Meta:
         table = "cat_game_table"
