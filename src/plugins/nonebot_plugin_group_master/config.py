@@ -3,6 +3,7 @@ from pydantic import Extra, BaseModel
 from pathlib import Path
 from nonebot import get_driver
 
+
 class Config(BaseModel, extra=Extra.ignore):
     """
     配置类
@@ -16,7 +17,7 @@ class Config(BaseModel, extra=Extra.ignore):
     # 最大幸运值
     daily_sign_max_lucky: int = 10
 
-    steam_api_key= "CFBCDCA9ACBFDDACD0321DB2BA4BDBCB"
+    steam_api_key = "CFBCDCA9ACBFDDACD0321DB2BA4BDBCB"
 
 
 current_directory = Path(__file__).resolve().parent
@@ -38,6 +39,10 @@ sgin_bg_path = current_directory / "resource" / "sgin-bg-imgs"
 plugin_config = Config.parse_obj(get_driver().config)
 global_config = get_driver().config
 
+if global_config.environment == 'dev':
+    web_url = 'http://127.0.0.1:8080'
+else:
+    web_url = 'https://botapi.mehaotian.com'
 
 # 签到基础点数
 BASE = plugin_config.daily_sign_base
@@ -49,4 +54,3 @@ MULTIPLIER = plugin_config.daily_sign_multiplier
 MAX_LUCKY = plugin_config.daily_sign_max_lucky
 
 steam_base_url = 'http://api.steampowered.com'
-

@@ -26,7 +26,7 @@ from ..models.steam_model import SteamTable
 from ..models.join_lottery_model import JoinLotteryTable
 from apscheduler.jobstores.base import JobLookupError
 from tortoise.exceptions import DoesNotExist
-
+from ..config import web_url
 from nonebot import require
 try:
     scheduler = require("nonebot_plugin_apscheduler").scheduler
@@ -45,7 +45,7 @@ async def publish_lottery(uid: str, gid: str) -> Message:
 
     login_key = user.login_key
     print(login_key)
-    url = 'https://botapi.mehaotian.com/lottery?key=' + login_key
+    url = f'{web_url}/lottery?key=' + login_key
     msg = (
         f' 点击链接创建抽奖\n'
         f' {url}'
