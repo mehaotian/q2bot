@@ -1,0 +1,1 @@
+import{bI as e,aE as t,u as o,v as s}from"./index-CDdzeMa6.js";const c={},n=s("h1",null,"Lottery Result",-1),r=[n];function a(_,l){return t(),o("div",null,r)}const d=e(c,[["render",a]]);export{d as default};
