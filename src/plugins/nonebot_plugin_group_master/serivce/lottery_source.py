@@ -193,7 +193,7 @@ async def open_lottery(rid: int, r_type=False) -> Message:
     lottery_pool = list(participants)
 
     # winner = random.choice(lottery_pool)
-    winner = reset_lottery(winner=None, lottery_pool=lottery_pool)
+    winner = reset_lottery(lottery_pool=lottery_pool)
     if not winner:
         return '没了，一点都没了，所有人都中过一次奖了！'
 
