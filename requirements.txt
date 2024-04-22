@@ -41,6 +41,7 @@ passlib==1.7.4
 Pillow==9.5.0
 psycopg2-binary==2.9.9
 pyasn1==0.6.0
+pycryptodome==3.20.0
 pycryptodomex==3.20.0
 pydantic==1.10.12
 pygtrie==2.5.0
