@@ -16,7 +16,7 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
     MessageSegment,
 )
-print("game.py")
+
 game = on_fullmatch("开启", priority=1, block=False)
 
 @game.handle()

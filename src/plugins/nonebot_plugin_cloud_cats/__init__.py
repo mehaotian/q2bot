@@ -1,22 +1,24 @@
 
 import locale
 from nonebot import require
+require("nonebot_plugin_tortoise_orm")
 from nonebot.plugin import PluginMetadata
 from .config import Config, global_config
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from nonebot_plugin_apscheduler import scheduler
 from nonebot.log import logger
-from . import models
-from .core import (
-    game
-)
+# from . import models
+from importlib import import_module
+
+# from .core import (
+#     game
+# )
+
+import_module('.models', __package__)
+import_module('.core', __package__)
 # 设置本地化
 locale.setlocale(locale.LC_TIME, 'zh_CN.UTF-8')
-
 # db_url = 'postgresql://wuhao:1qaz!QAZ@bot.mehaotian.com:5432/botdb_dev'
-
-require("nonebot_plugin_tortoise_orm")
-
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_cloud_cats",

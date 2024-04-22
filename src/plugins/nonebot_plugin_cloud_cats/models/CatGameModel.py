@@ -14,7 +14,12 @@ from tortoise import fields
 from tortoise.models import Model
 
 from nonebot.log import logger
+from nonebot_plugin_tortoise_orm import add_model
+from ..config import global_config
 
+# 添加模型
+# db_url = global_config.cat_db_url
+# add_model(model=__name__, db_name='catdb', db_url=db_url)
 
 class CatGameTable(Model):
     # 自增 ID (Primary key)
