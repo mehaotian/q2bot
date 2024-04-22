@@ -132,19 +132,27 @@ async def query_steam_user(user_id: str):
     steam_id = user.steamid
     if not steam_id:
         return MessageSegment.at(user_id) + " " + msg
+    
+    player_name = user.play_name
 
-    player = get_steam_user(steam_id=steam_id)
+    if not player_name:
+        player = get_steam_user(steam_id=steam_id)
 
-    if not player:
-        return MessageSegment.at(user_id) + "未找到 Steam 用户,可能是网络波动导致。"
+        if not player:
+            # return MessageSegment.at(user_id) + "未找到 Steam 用户,可能是网络波动导致。"
+            player_name = ''
+        else:
+            player_name = player['personaname'] or player['realname']
+            user.play_name = player_name
+            await user.save(update_fields=['play_name'])
 
-    player_name = player['personaname'] or player['realname']
+        
 
     msg = MessageSegment.at(user_id) + (
-        f"\nSteam 昵称：{player_name} \n"
-        f"好友代码：{get_friend_code(steam_id)}\n"
-        f"邀请链接：{get_invite_url(steam_id)}\n"
-        f"个人主页：{get_community_url(steam_id)} \n"
+        f"\nSteam 昵称：{player_name} \n" if player_name else f"\n",
+        f"好友代码：{get_friend_code(steam_id)}\n",
+        f"邀请链接：{get_invite_url(steam_id)}\n",
+        f"个人主页：{get_community_url(steam_id)} \n",
     )
 
     return msg
@@ -157,16 +165,24 @@ async def bind_steam_user(user_id: str, group_id: str, sender, steamid):
     await create_user(user_id, group_id, sender)
     msg = None
 
-    recod = await SteamTable.save_steam(user_id, steamid)
-    if recod:
-        player = get_steam_user(steam_id=steamid)
-        if not player:
-            return MessageSegment.at(user_id) + " 绑定失败，未找到 Steam 用户或Steam网络波动异常"
-        
+    player = get_steam_user(steam_id=steamid)
+
+    if player:
         player_name = player['personaname'] or player['realname']
-        if not player_name:
-            return MessageSegment.at(user_id) + " 绑定失败，未找到 Steam 用户"
+    else:
+        player_name = ''
 
-        msg = MessageSegment.at(user_id) + f" 绑定成功，您的 Steam 昵称为：{player_name}\n请确定Steam昵称是否正确，否则请检查好友代码并更正。\n另：请你做个人，别绑别人的steam，一经发现 ，将禁用此功能。"
+    friendcode = get_friend_code(steamid)
 
-    return msg
+
+    recod = await SteamTable.save_steam(user_id, steamid, player_name, friendcode)
+
+    if recod:
+        if player_name:
+            msg = MessageSegment.at(user_id) + f" 绑定成功，您的 Steam 昵称为：{player_name}\n请确定Steam昵称是否正确，否则请检查好友代码并更正。\n另：请你做个人，别绑别人的steam，一经发现 ，将禁用此功能。"
+        else:
+            msg = MessageSegment.at(user_id) + f" 绑定成功，您的 Steam 好友代码为：{friendcode}\n请确定好友代码是否正确，否则请检查好友代码并更正。\n另：请你做个人，别绑别人的steam，一经发现 ，将禁用此功能。"
+    else:
+        MessageSegment.at(user_id) + " 绑定失败，未找到 Steam 用户"
+    return msg  
+  

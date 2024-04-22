@@ -14,6 +14,8 @@ class SteamTable(Model):
 
     # steamid: 玩家的 Steam ID，这是一个唯一的数字，用于在 Steam 平台上标识玩家。
     steamid = fields.CharField(max_length=255)
+    play_name = fields.CharField(max_length=255)
+    friendcode = fields.CharField(max_length=255)
     # # profileurl: 玩家的 Steam 社区资料的 URL。
     # profileurl = fields.CharField(max_length=255)
     # # 好友码
@@ -58,7 +60,7 @@ class SteamTable(Model):
         table_description = "steam 信息表"  # 可选
 
     @classmethod
-    async def save_steam(cls, uid, steamid) -> "SteamTable":
+    async def save_steam(cls, uid, steamid,player_name='', friendcode='') -> "SteamTable":
         """
         保存 steam 数据
         :param uid: 用户唯一ID
@@ -69,13 +71,18 @@ class SteamTable(Model):
             # 尝试获取一个已经存在的记录
             instance = await cls.get(user_id=uid)
             instance.steamid = steamid
+            
+            
+            instance.friendcode = friendcode
+            instance.play_name = player_name
+            
+            
+            await instance.save(update_fields=['steamid','play_name','friendcode'])
+            
 
-            await instance.save(update_fields=['steamid'])
         except DoesNotExist:
             # 如果不存在，创建一个新的记录
-            instance = await cls.create(user_id=uid, steamid=steamid)
+            instance = await cls.create(user_id=uid, steamid=steamid, play_name=player_name, friendcode=friendcode)
 
-
-       
 
         return instance
