@@ -12,6 +12,7 @@
 
 from tortoise import fields
 from tortoise.models import Model
+from tortoise.exceptions import DoesNotExist
 
 from nonebot.log import logger
 from nonebot_plugin_tortoise_orm import add_model
@@ -37,3 +38,34 @@ class CatGameTable(Model):
     class Meta:
         table = "cat_game_table"
         table_description = "游戏表"
+
+    @classmethod
+    async def create_game(cls, gid: str):
+        """
+        创建默认游戏游戏
+        参数：
+            - gid: 群号
+        返回：
+            - CatGameTable
+        """
+        try:
+            record = await cls.create(group_id=gid,status=0)
+            return record
+        except Exception as e:
+            logger.error(f"创建游戏失败：{e}")
+            return None
+
+    @classmethod
+    async def get_game(cls, gid: str):
+        """
+        获取游戏
+        参数：
+            - gid: 群号
+        返回：
+            - CatGameTable
+        """
+        try:
+            record = await cls.get(group_id=gid)
+            return record            
+        except DoesNotExist:
+            return None

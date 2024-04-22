@@ -17,9 +17,13 @@ from nonebot.adapters.onebot.v11 import (
     MessageSegment,
 )
 
+from ..hooks.game_hook import GameHook
+
 game = on_fullmatch("开启", priority=1, block=False)
+
 
 @game.handle()
 async def game_handle(bot: Bot, event: GroupMessageEvent):
-    print('----',event.get_session_id())
-    await game.send("游戏功能暂未开放，敬请期待！")
+    gid = str(event.group_id)
+    msg = await GameHook.switch_game(gid)
+    await bot.send(event=event, message=msg)
