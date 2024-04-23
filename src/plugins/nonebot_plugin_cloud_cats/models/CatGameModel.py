@@ -10,6 +10,7 @@
 
 # from pydantic import BaseModel
 
+import random
 from tortoise import fields
 from tortoise.models import Model
 from tortoise.exceptions import DoesNotExist

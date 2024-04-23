@@ -9,6 +9,7 @@
 '''
 from nonebot import (
     on_fullmatch,
+    on_regex
 )
 from nonebot.adapters.onebot.v11 import (
     Bot,
@@ -19,11 +20,29 @@ from nonebot.adapters.onebot.v11 import (
 
 from ..hooks.game_hook import GameHook
 
-game = on_fullmatch("开启", priority=1, block=False)
+gameReg = r"^\s*(开启|关闭)云养猫\s*$"
+game = on_regex(gameReg, priority=20, block=True)
+create_game = on_fullmatch("创建猫咪", priority=20, block=True)
 
 
 @game.handle()
 async def game_handle(bot: Bot, event: GroupMessageEvent):
     gid = str(event.group_id)
-    msg = await GameHook.switch_game(gid)
+    msgdata = event.get_message()
+    msgdata = msgdata.extract_plain_text().strip()
+
+    # 如果包含 开启
+    if "开启" in msgdata:
+        msgdata = 1
+    else:
+        msgdata = 0
+    print(msgdata)
+    msg = await GameHook.switch_game(gid, msgdata)
+
+    await bot.send(event=event, message=msg)
+
+@create_game.handle()
+async def create_game_handle(bot: Bot, event: GroupMessageEvent):
+    gid = str(event.group_id)
+    msg = await GameHook.create_cat(gid)
     await bot.send(event=event, message=msg)

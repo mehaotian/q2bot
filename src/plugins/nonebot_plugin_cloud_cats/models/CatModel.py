@@ -10,6 +10,7 @@
 
 # from pydantic import BaseModel
 
+import random
 from tortoise import fields
 from tortoise.models import Model
 
@@ -47,3 +48,56 @@ class CatTable(Model):
     class Meta:
         table = "cat_table"
         table_description = "猫咪表"
+
+    @classmethod
+    async def create_cat(cls, game_id: str,gid:str):
+        """
+        创建猫咪
+        参数：
+            - gid: 群号
+        返回：
+            - CatTable
+        """
+        try:
+            record = await cls.create(game_id=game_id)
+
+            # 群组 ID
+            record.group_id = gid
+            # 猫咪名称
+            record.name = ""
+            # 年龄
+            record.age = 0
+            # 体重 单位 克
+            record.weight = 85
+            # 形象
+            record.image = ""
+            # attributes = ['安静', '活泼', '乖巧', '调皮', '狡猾', '懒惰', '爱睡觉', '爱吃', '爱玩耍', '爱撒娇']
+            # random_attribute = random.choice(attributes)
+            random_number = random.randint(0, 9)
+            # 性格
+            record.character = random_number
+            # 品种
+            record.breed = ""
+            # 性别
+            sex_number = random.randint(0, 1)
+            record.sex = sex_number
+
+            # 状态
+            record.status = 1
+            await record.save(update_fields=['group_id','name','age','weight','image','character','breed','sex','status'])
+            return record
+        except Exception as e:
+            logger.error(f"创建猫咪失败：{e}")
+            return None
+        
+    @classmethod
+    async def get_cat_list(cls, game_id: str):
+        """
+        获取猫咪列表
+        参数：
+            - gid: 群号
+        返回：
+            - list
+        """
+        record = await cls.filter(game_id=game_id).values()
+        return record

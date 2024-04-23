@@ -16,13 +16,14 @@ from nonebot.adapters.onebot.v11 import (
 )
 
 from ..models.CatGameModel import CatGameTable
+from ..models.CatModel import CatTable
 
 class GameHook:
     def __init__(self):
         pass
 
     @classmethod
-    async def switch_game(cls, gid: str) -> Message:
+    async def switch_game(cls, gid: str,type:int) -> Message:
         """
         开关游戏
         参数：
@@ -38,7 +39,46 @@ class GameHook:
             await CatGameTable.create(group_id=gid,status=1)
             record = await CatGameTable.get_game(gid)
 
+        if record.status == type:
+            msg = "云养猫游戏已经开启了,请勿重复操作" if type == 1 else "云养猫游戏已经关闭了，请勿重复操作"
+            return Message(MessageSegment.text(msg))
 
-        print(record)
+        record.status = type
+        await record.save(update_fields=['status'])
+        if type == 0:
+            msg = "云养猫游戏已关闭"
+        else:
+            msg = "云养猫游戏已开启"
 
-        return Message(MessageSegment.text("游戏已开启"))
+        return Message(MessageSegment.text(msg))
+    
+    async def check_game (gid:str)->bool:
+        """
+        检查游戏是否开启
+        参数：
+            - gid: 群号
+        返回：
+            - bool
+        """
+        record = await CatGameTable.get_game(gid)
+        if record.status == 1:
+            return True
+        return False
+    
+    async def create_cat(gid:str)->Message:
+        """
+        创建猫咪
+        参数：
+            - gid: 群号
+        返回：
+            - Message
+        """
+        record = await CatGameTable.get_game(gid)
+        if not record:
+            return Message(MessageSegment.text("云养猫游戏未开启"))
+        # 创建猫咪
+        if record := await CatTable.create_cat(record.id,gid):
+            return Message(MessageSegment.text("猫咪创建成功"))
+        
+        return Message(MessageSegment.text("猫咪创建失败"))
+    
