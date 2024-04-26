@@ -23,7 +23,10 @@ from ..hooks.game_hook import GameHook
 gameReg = r"^\s*(开启|关闭)云养猫\s*$"
 game = on_regex(gameReg, priority=20, block=True)
 create_game = on_fullmatch("创建猫咪", priority=20, block=True)
+cat_info = on_fullmatch("猫咪信息", priority=20, block=True)
 
+
+test_update = on_fullmatch("更新猫咪", priority=100, block=True)
 
 @game.handle()
 async def game_handle(bot: Bot, event: GroupMessageEvent):
@@ -45,4 +48,17 @@ async def game_handle(bot: Bot, event: GroupMessageEvent):
 async def create_game_handle(bot: Bot, event: GroupMessageEvent):
     gid = str(event.group_id)
     msg = await GameHook.create_cat(gid)
+    await bot.send(event=event, message=msg)
+
+@cat_info.handle()
+async def cat_info_handle(bot: Bot, event: GroupMessageEvent):
+    gid = str(event.group_id)
+    msg = await GameHook.get_cat_info(gid)
+    await bot.send(event=event, message=msg)
+
+
+@test_update.handle()
+async def test_update_handle(bot: Bot, event: GroupMessageEvent):
+    gid = str(event.group_id)
+    msg = await GameHook.update_cat(gid)
     await bot.send(event=event, message=msg)

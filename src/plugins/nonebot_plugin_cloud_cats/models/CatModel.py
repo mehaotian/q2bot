@@ -16,11 +16,13 @@ from tortoise.models import Model
 
 from nonebot.log import logger
 
+from .CatStateModel import CatStateTable
+
 
 class CatTable(Model):
     # 自增 ID (Primary key)
     id = fields.IntField(pk=True, generated=True)
-     # 外键关联猫咪
+    # 外键关联猫咪
     game = fields.ForeignKeyField(
         'catdb.CatGameTable', related_name='game', on_delete=fields.CASCADE)
     # 群组 ID ，使用str ，int容易超过范围
@@ -41,7 +43,7 @@ class CatTable(Model):
     sex = fields.CharField(max_length=255, default="")
     # 猫咪状态 , 0 禁用中 1 游戏进行中 2 死亡
     status = fields.IntField(default=0)
-   
+
     # 创建时间
     created_at = fields.DatetimeField(auto_now_add=True)
 
@@ -50,7 +52,7 @@ class CatTable(Model):
         table_description = "猫咪表"
 
     @classmethod
-    async def create_cat(cls, game_id: str,gid:str):
+    async def create_cat(cls, game_id: str, gid: str):
         """
         创建猫咪
         参数：
@@ -59,12 +61,13 @@ class CatTable(Model):
             - CatTable
         """
         try:
+
             record = await cls.create(game_id=game_id)
 
             # 群组 ID
             record.group_id = gid
             # 猫咪名称
-            record.name = ""
+            record.name = "喵叽"
             # 年龄
             record.age = 0
             # 体重 单位 克
@@ -84,14 +87,26 @@ class CatTable(Model):
 
             # 状态
             record.status = 1
-            await record.save(update_fields=['group_id','name','age','weight','image','character','breed','sex','status'])
+            await record.save(update_fields=['group_id', 'name', 'age', 'weight', 'image', 'character', 'breed', 'sex', 'status'])
+
+            # 创建猫咪状态，初始化猫咪属性
+            await CatStateTable.update_state(
+                cat_id=record.id,
+                hunger=100,
+                cleanless=100,
+                happiness=100,
+                fatigue=100,
+                sleep=100,
+                health=100
+            )
+
             return record
         except Exception as e:
             logger.error(f"创建猫咪失败：{e}")
             return None
-        
+
     @classmethod
-    async def get_cat_list(cls, game_id: str):
+    async def get_cat(cls, game_id: str):
         """
         获取猫咪列表
         参数：
@@ -99,5 +114,14 @@ class CatTable(Model):
         返回：
             - list
         """
-        record = await cls.filter(game_id=game_id).values()
-        return record
+        if not await CatTable.exists(game_id=game_id):
+            return None
+
+        if (cat_record := await cls.get(game_id=game_id)) is not None:
+            if (state_record := await CatStateTable.get(cat_id=cat_record.id)) is not None:
+                result = {
+                    **cat_record.__dict__,
+                    "state": state_record.__dict__
+                }
+                return result
+        return None

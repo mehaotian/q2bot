@@ -12,11 +12,12 @@
 from tortoise.models import Model
 from tortoise import fields
 
+
 class CatStateTable(Model):
     id = fields.IntField(pk=True)
     # 外键关联猫咪
     cat = fields.ForeignKeyField(
-        'catdb.CatTable', related_name='state', on_delete=fields.CASCADE)
+        'catdb.CatTable', related_name='cat', on_delete=fields.CASCADE)
     # 饱食度
     hunger = fields.IntField(default=100)
     # 清洁度
@@ -36,3 +37,16 @@ class CatStateTable(Model):
     class Meta:
         table = "cat_state_table"  # 数据库中的表名
         table_description = "猫咪状态表"
+
+    @classmethod
+    async def update_state(cls, cat_id, **kwargs):
+        """
+        更新猫咪状态
+        参数：
+            - kwargs: 状态参数
+        """
+        record, _ = await CatStateTable.get_or_create(cat_id=cat_id)
+        print(kwargs.items())
+        for key, value in kwargs.items():
+            setattr(record, key, value)
+        return await record.save(update_fields=kwargs.keys())
