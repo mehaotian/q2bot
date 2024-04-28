@@ -31,6 +31,7 @@ game = Game(record=record)
 for i in range(24):
     game.tick()
     print(game.cat)
-    game.tick()
-    print(game.cat)
+
+
+game.cat.get_stat()
 

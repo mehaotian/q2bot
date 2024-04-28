@@ -42,6 +42,14 @@ class Cat:
         # 临时行动，用于记录上一个行动
         self.temp_action = 0
 
+
+        # 统计行动次数 '无事','睡觉','清理','吃饭','玩耍'
+        self.normal_count = 0
+        self.sleep_count = 0
+        self.clean_count = 0
+        self.feed_count = 0
+        self.play_count = 0
+
     def sleep_cat(self):
         """
         猫咪睡觉：
@@ -59,6 +67,10 @@ class Cat:
             猫咪需要睡觉来自我调整
             但是长时间的睡眠，会导致心情变差，因为缺少了活动
         """
+        # 睡眠统计
+        self.sleep_count += 1
+
+
         # 睡眠值增加
         self.sleep = calc_attr(self.sleep, 10, 20)
         # 疲劳值减少
@@ -94,6 +106,9 @@ class Cat:
             猫咪进食后，会增加心情，但是会增加疲劳，因为吃饱了就想睡觉
             但是长时间的睡眠，会导致心情变差，因为缺少了活动
         """
+        # 进食统计
+        self.feed_count += 1
+
         self.hunger = 0
         self.happiness = calc_attr(value=self.happiness, minval= 10, maxval=20,maxs=80)
         self.fatigue = calc_attr(self.fatigue, 20, 30)
@@ -128,6 +143,9 @@ class Cat:
             self.temp_action = 1
             self.sleep_cat()
             return
+        
+        # 玩耍统计
+        self.play_count += 1
 
         self.happiness = calc_attr(value=self.happiness, minval= 10, maxval=20,maxs=80)
         self.fatigue = calc_attr(self.fatigue, 5, 18)
@@ -181,6 +199,9 @@ class Cat:
             清理后，会增加饥饿度，因为清理会消耗体力
 
         """
+        # 清理统计
+        self.clean_count += 1
+
         self.cleanliness = calc_attr(value=self.cleanliness, minval= 20, maxval=40,maxs=80)
         self.happiness = calc_attr(value=self.happiness, minval= 10, maxval=20,maxs=80)
         self.fatigue = calc_attr(self.fatigue, 2, 4, 'down')
@@ -307,7 +328,15 @@ class Cat:
             f'健康={self._health_str():<3},'
             f'行动={actions[self.temp_action]:<8} '
         )
-
+    def get_stat(self):
+        print (
+            f'Cat统计信息：'
+            f'无事={self.normal_count}, '
+            f'睡觉={self.sleep_count}, '
+            f'清理={self.clean_count}, '
+            f'吃饭={self.feed_count}, '
+            f'玩耍={self.play_count}, '
+        )
 
 class Game:
     def __init__(self, record):
@@ -324,6 +353,7 @@ class Game:
         self.cat.temp_action = action
         # 如果猫咪无事正常 tick
         if action == 0:
+            self.cat.normal_count += 1
             self.cat.tick()
 
         # 睡觉
