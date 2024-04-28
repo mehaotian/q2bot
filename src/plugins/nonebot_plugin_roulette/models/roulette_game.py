@@ -12,16 +12,12 @@ import random
 from tortoise import fields
 from tortoise.models import Model
 from tortoise.exceptions import DoesNotExist
-
 from nonebot.log import logger
 
 
 class RouletteGameTable(Model):
     # 自增 ID (Primary key)
     id = fields.IntField(pk=True, generated=True)
-    #
-    player = fields.ForeignKeyField(
-        'default.RoulettePlayerTable', related_name='player', on_delete=fields.CASCADE)
     # 用户 ID
     # user_id = fields.CharField(max_length=255, default="")
     # 群组 ID
@@ -91,7 +87,8 @@ class RouletteGameTable(Model):
             - CatGameTable
         """
         try:
-            record = await cls.get(group_id=gid)
+            # 获取 gid ,并且 status 不是2 的所有数据
+            record = await cls.filter(group_id=gid).exclude(status=2)
             return record
         except DoesNotExist:
             return None

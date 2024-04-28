@@ -20,10 +20,11 @@ class RoulettePlayerTable(Model):
     # 自增 ID (Primary key)
     id = fields.IntField(pk=True, generated=True)
     # 用户 ID,外键关联用户
-    user = fields.ForeignKeyField(
-        'userdb.UserTable', related_name='roulette_player', on_delete=fields.CASCADE)
+    user_id = fields.CharField(max_length=255, default="")
     # 游戏 ID
-    game_id = fields.CharField(max_length=255, default="")
+    game = fields.ForeignKeyField(
+        'roulettedb.RouletteGameTable', related_name='game')
+    # game_id = fields.CharField(max_length=255, default="")
     # 群组 ID
     group_id = fields.CharField(max_length=255, default="")
     # 命数
