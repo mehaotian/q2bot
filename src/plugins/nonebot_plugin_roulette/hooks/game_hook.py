@@ -236,6 +236,7 @@ class GameHook:
 
         # 开始抽卡
         if state == 1:
+            await asyncio.sleep(1)
             # 开始抽卡
             await bot.send(event=event, message='进入抽卡阶段，本阶段每人将随机到的两张卡片，如背包已满，则无法获取新卡片')
 
@@ -260,10 +261,11 @@ class GameHook:
                     card_slot_str = ' '.join(
                         player.card_slot + ['空'] * (4 - len(player.card_slot)))
                     msg += at + f' 的卡片背包: {card_slot_str}\n'
-
+                    # 保存卡片信息
+                    await player.save(update_fields=['card_slot'])
                 else:
                     card_slot_str = ' '.join(player.card_slot)
-                    msg = at + f' 的卡片背包: {card_slot_str} (满背包，本次抽卡无获得)\n'
+                    msg += at + f' 的卡片背包: {card_slot_str} (满背包，本次抽卡无获得)\n'
             await asyncio.sleep(1)
             await bot.send(event=event, message=Message(msg))
             await asyncio.sleep(1)
@@ -283,10 +285,38 @@ class GameHook:
             player = await RoulettePlayerTable.get_player(game_id=record.id,uid=current_user_id)
             debuff = player.debuff
             at = MessageSegment.at(current_user_id)
+            msg = at + ' 你是本轮持枪者，接下来进入你的回合！'
+            await asyncio.sleep(1)
+            await bot.send(event=event,message=msg)
+
             if not debuff:
-                msg = at + ' 你是本轮持枪者，是否使用卡片?'
-                return await bot.send(event=event,message=msg)
+                # 无判定直接进入下一个用卡阶段
+                record.state = 3
+                await record.save(update_fields=['state'])
+                await cls.game_flowing(bot, event)
+                # msg = at + ' 无负面卡片判定，跳过判定阶段！'
+                # return await bot.send(event=event,message=msg)
             else:
+                # 有debuff的判定
                 pass
 
+        # 用卡阶段
+        if state == 3:
+            current_user_id = record.current_user_id
+            player = await RoulettePlayerTable.get_player(game_id=record.id,uid=current_user_id)
+            at = MessageSegment.at(current_user_id)
+            card_slot = player.card_slot
+
+            if not card_slot:
+                # 无卡牌直接进入下一个用卡阶段
+                # await bot.send(event=event, message=at + ' 背包为空，跳过出卡阶段')
+                # 直接进入开枪阶段
+                record.state = 5
+                await record.save(update_fields=['state'])
+                await cls.game_flowing(bot, event)
+            else:
+                await asyncio.sleep(1)
+                await bot.send(event=event, message= at + f' 你当前拥有卡片： {" ".join(card_slot)}，是否使用卡片？')
+            
+            
         print('流程结束')
