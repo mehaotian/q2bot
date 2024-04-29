@@ -19,11 +19,15 @@ class RouletteGameTable(Model):
     # 自增 ID (Primary key)
     id = fields.IntField(pk=True, generated=True)
     # 用户 ID
-    # user_id = fields.CharField(max_length=255, default="")
+    user_id = fields.CharField(max_length=255, default="")
     # 群组 ID
     group_id = fields.CharField(max_length=255, default="")
     # 赢家 ID
     winner_id = fields.CharField(max_length=255, default="")
+    # 当前持枪者
+    current_user_id = fields.CharField(max_length=255, default="")
+    # 玩家座位
+    player_seat = fields.JSONField(default=[])
     # 参与人数
     player_count = fields.IntField(default=0)
     # 子弹数
@@ -36,6 +40,8 @@ class RouletteGameTable(Model):
     # 游戏状态 , 0 游戏未进行 1 游戏进行中 2 游戏结束
     status = fields.IntField(default=0)
 
+    # 流程状态 0 装弹阶段 1 抽卡阶段（空弹进入） 2 前置buff判定阶段 3 用卡阶段 4 实时buff判定阶段 5 开枪阶段 6 后置buff判定 7 结算阶段（失败回到上一个阶段） 
+    state = fields.IntField(0)
     # 创建时间
     created_at = fields.DatetimeField(auto_now_add=True)
 
@@ -69,7 +75,7 @@ class RouletteGameTable(Model):
             - CatGameTable
         """
         try:
-            record = await cls.get(game_id=game_id)
+            record = await cls.get(id=game_id)
             record.status = 2
             await record.save()
             return record
@@ -78,7 +84,7 @@ class RouletteGameTable(Model):
             return None
 
     @classmethod
-    async def get_game(cls, gid: str):
+    async def get_game(cls, gid: str, uid: str = None):
         """
         获取游戏
         参数：
@@ -88,7 +94,19 @@ class RouletteGameTable(Model):
         """
         try:
             # 获取 gid ,并且 status 不是2 的所有数据
-            record = await cls.filter(group_id=gid).exclude(status=2)
-            return record
+            print('uid', uid)
+            if not uid:
+                print(0)
+                record = await cls.filter(group_id=gid).exclude(status=2)
+            else:
+                print(1)
+                record = await cls.filter(group_id=gid, user_id=uid).exclude(status=2)
+
+            print('record', record)
+            if record and len(record) > 0:
+                return record[0]
+            return None
         except DoesNotExist:
             return None
+
+   
