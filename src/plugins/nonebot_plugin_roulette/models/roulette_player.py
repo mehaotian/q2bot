@@ -68,6 +68,9 @@ class RoulettePlayerTable(Model):
     # 前置debuff
     debuff = fields.JSONField(default=[])
 
+    # 伤害倍率
+    damage_rate = fields.IntField(default=1)
+
     # 玩家状态 0 参与中 1 胜利 2 失败
     status = fields.IntField(default=0)
 

@@ -34,7 +34,7 @@ class RouletteGameTable(Model):
     bullet_count = fields.IntField(default=6)
     # 子弹排列， 0 表示无，1表示有
     bullet_list = fields.JSONField(default=[])
-    # 当前子弹位置
+    # 当前子弹位置 ，-1 表示无子弹,该装弹了
     current_bullet = fields.IntField(default=0)
 
     # 游戏状态 , 0 游戏未进行 1 游戏进行中 2 游戏结束
