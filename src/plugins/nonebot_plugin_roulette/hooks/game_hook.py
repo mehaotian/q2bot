@@ -918,7 +918,8 @@ class GameHook:
         # buff 优先级 伤害转移 > 保护
         if '伪装' in buff:
             # 移除当前用户卡片效果
-            user_player.buff.remove('伪装')
+            buff.remove('伪装')
+            user_player.buff = buff
             await user_player.save(update_fields=['buff'])
 
             # 判定伤害转移
@@ -978,7 +979,9 @@ class GameHook:
             return None
         elif '保护' in buff:
             # 移除当前用户卡片效果
-            user_player.buff.remove('保护')
+            
+            buff.remove('保护')
+            user_player.buff = buff
             await user_player.save(update_fields=['buff'])
 
             # 开枪后，伤害归1
