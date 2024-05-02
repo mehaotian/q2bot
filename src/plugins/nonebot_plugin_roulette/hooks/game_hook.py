@@ -73,7 +73,7 @@ class GameHook:
 
 
     @classmethod
-    async def create_game(cls, group_id: str, user_id: str, player_count: int = 3) -> Message:
+    async def create_game(cls, group_id: str, user_id: str, player_count: int = 5) -> Message:
         """
         开关游戏
         参数：
