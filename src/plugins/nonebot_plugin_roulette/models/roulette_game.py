@@ -40,8 +40,8 @@ class RouletteGameTable(Model):
     # 游戏状态 , 0 游戏未进行 1 游戏进行中 2 游戏结束
     status = fields.IntField(default=0)
 
-    # 流程状态 0 装弹阶段 1 抽卡阶段（空弹进入） 2 前置buff判定阶段 3 用卡阶段 4 实时buff判定阶段 5 开枪阶段 6 后置buff判定 7 结算阶段（失败回到上一个阶段） 
-    state = fields.IntField(0)
+    # 流程状态 0 装弹阶段 1 抽卡阶段（空弹进入） 2 前置buff判定阶段 3 用卡阶段 4 实时buff判定阶段 5 开枪阶段 6  结算阶段（失败回到上一个阶段） 
+    state = fields.IntField(default=0)
     # 创建时间
     created_at = fields.DatetimeField(auto_now_add=True)
 

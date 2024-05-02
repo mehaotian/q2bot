@@ -7,6 +7,7 @@ class Config(BaseModel, extra=Extra.ignore):
     """
     配置类
     """
+    pass
 
 
 current_directory = Path(__file__).resolve().parent
@@ -28,3 +29,4 @@ plugin_config = Config.parse_obj(get_driver().config)
 
 # 获取配置
 global_config = get_driver().config
+print('env 配置:', global_config)

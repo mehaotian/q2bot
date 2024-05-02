@@ -58,7 +58,7 @@ class RoulettePlayerTable(Model):
     skip_count = fields.IntField(default=0)
 
     # 筹码
-    chips = fields.IntField(default=50)
+    chips = fields.IntField(default=100)
 
     # 卡片槽位 4 个 [0,0,0,0]
     card_slot = fields.JSONField(default=[])
@@ -98,6 +98,7 @@ class RoulettePlayerTable(Model):
         except Exception as e:
             logger.error(f"创建玩家失败：{e}")
             return None
+
     @classmethod
     async def get_player(cls, game_id: str, uid: str):
         """
@@ -109,10 +110,11 @@ class RoulettePlayerTable(Model):
             - RoulettePlayerTable
         """
         try:
-            record = await cls.get(game_id=game_id,user_id=uid)
+            record = await cls.get(game_id=game_id, user_id=uid)
             return record
         except DoesNotExist:
             return None
+
     @classmethod
     async def get_game_players(cls, game_id: str):
         """
@@ -123,7 +125,7 @@ class RoulettePlayerTable(Model):
             - RoulettePlayerTable
         """
         try:
-            record = await cls.filter(game_id=game_id).all()
+            record = await cls.filter(game_id=game_id, status=0).all()
             return record
         except DoesNotExist:
             return None

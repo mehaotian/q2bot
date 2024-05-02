@@ -1,0 +1,157 @@
+{
+  "name": "鸽子镇",
+  "description": "这是鸽子镇的地图。",
+  "tiles": [
+    {
+      "id": 1,
+      "name": "起点",
+      "type": "start",
+      "position": 0
+    },
+    {
+      "id": 2,
+      "name": "中心广场",
+      "type": "property",
+      "position": 1,
+      "price": 1000,
+      "owner": null
+    },
+    {
+      "id": 3,
+      "name": "购物中心",
+      "type": "property",
+      "position": 2,
+      "price": 1200,
+      "owner": null
+    },
+    {
+      "id": 4,
+      "name": "事件广场",
+      "type": "event",
+      "position": 3,
+      "event_description": "事件描述：玩家需要支付500金币。"
+    },
+    {
+      "id": 5,
+      "name": "海滨别墅",
+      "type": "property",
+      "position": 4,
+      "price": 1500,
+      "owner": null
+    },
+    {
+      "id": 6,
+      "name": "命运之门",
+      "type": "chance",
+      "position": 5,
+      "event_description": "抽取一张命运卡片。"
+    },
+    {
+      "id": 7,
+      "name": "大学校园",
+      "type": "property",
+      "position": 6,
+      "price": 2000,
+      "owner": null
+    },
+    {
+      "id": 8,
+      "name": "图书馆",
+      "type": "property",
+      "position": 7,
+      "price": 1800,
+      "owner": null
+    },
+    {
+      "id": 9,
+      "name": "健身房",
+      "type": "property",
+      "position": 8,
+      "price": 1600,
+      "owner": null
+    },
+    {
+      "id": 10,
+      "name": "医院",
+      "type": "property",
+      "position": 9,
+      "price": 2200,
+      "owner": null
+    },
+    {
+      "id": 11,
+      "name": "观光塔",
+      "type": "property",
+      "position": 10,
+      "price": 2500,
+      "owner": null
+    },
+    {
+      "id": 12,
+      "name": "银行",
+      "type": "property",
+      "position": 11,
+      "price": 2800,
+      "owner": null
+    },
+    {
+      "id": 13,
+      "name": "命运之门",
+      "type": "chance",
+      "position": 12,
+      "event_description": "抽取一张命运卡片。"
+    },
+    {
+      "id": 14,
+      "name": "购物街",
+      "type": "property",
+      "position": 13,
+      "price": 2400,
+      "owner": null
+    },
+    {
+      "id": 15,
+      "name": "地产拍卖",
+      "type": "auction",
+      "position": 14,
+      "event_description": "地产拍卖：玩家可以竞拍此地。"
+    },
+    {
+      "id": 16,
+      "name": "豪华别墅",
+      "type": "property",
+      "position": 15,
+      "price": 3000,
+      "owner": null
+    },
+    {
+      "id": 17,
+      "name": "事件广场",
+      "type": "event",
+      "position": 16,
+      "event_description": "事件描述：玩家需要支付500金币。"
+    },
+    {
+      "id": 18,
+      "name": "机场",
+      "type": "property",
+      "position": 17,
+      "price": 3500,
+      "owner": null
+    },
+    {
+      "id": 19,
+      "name": "豪华酒店",
+      "type": "property",
+      "position": 18,
+      "price": 3200,
+      "owner": null
+    },
+    {
+      "id": 20,
+      "name": "终点",
+      "type": "end",
+      "position": 19   
+    }
+  ]
+}
