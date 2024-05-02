@@ -63,6 +63,10 @@ game_help_aliases = ['帮助', 'help', 'h']
 game_help = on_command(game_help_aliases[0], aliases=set(
     game_help_aliases[1:]), priority=1, block=True)
 
+# 获取个人信息
+get_info_aliases = ['我的信息', '我的', '我', 'info', 'i']
+get_info = on_command(get_info_aliases[0], aliases=set(
+    get_info_aliases[1:]), priority=1, block=True)
 
 @start_game.handle()
 async def start_game_handle(bot: Bot, event: GroupMessageEvent):
@@ -221,6 +225,20 @@ async def pa_handle(bot: Bot, event: GroupMessageEvent):
     at_group = At(event.json())
     if msg := await GameHook.shoot(bot=bot, event=event, at_group=at_group):
         await bot.send(event, msg)
+
+@get_info.handle()
+async def get_info_handle(bot: Bot, event: GroupMessageEvent):
+    uid = str(event.user_id)
+    gid = str(event.group_id)
+    msg = MsgText(event.json())
+    params = msg.split(" ")
+
+    # 如果第一个不存在或第一个参数不是 /开始游戏 则返回错误
+    if not params or params[0][1:] not in get_info_aliases:
+        return await bot.send(event, f"指令错误, 示例：/{get_info_aliases[0]}")
+
+    msg = await GameHook.get_info(group_id=gid, user_id=uid)
+    await bot.send(event, msg)
 
 
 @game_help.handle()

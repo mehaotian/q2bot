@@ -20,14 +20,13 @@ class Config(BaseModel, extra=Extra.ignore):
     steam_api_key = "CFBCDCA9ACBFDDACD0321DB2BA4BDBCB"
 
 
-current_directory = Path(__file__).resolve().parent
 
 # 缓存目录
 # cache_directory = Path() / "cache_image"
 cache_dir = Path() / "cache_image"
 cache_directory = os.getenv('CACHE_DIR', cache_dir)
 print('----- 图片缓存路径', cache_directory)
-
+current_directory = Path(__file__).resolve().parent
 # 静态资源路径
 static_path = current_directory / "resource"
 

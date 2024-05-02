@@ -1,6 +1,6 @@
 
 from nonebot import require
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 import random
 import asyncio
 from nonebot import get_bot
@@ -17,6 +17,7 @@ from ..models.roulette_player import RoulettePlayerTable
 from ..models.db import UserTable
 from ..config import global_config
 from ..text2img.txt2img import txt2img
+from ..text2img.user2img import user_2_img
 
 # 获取超级管理员
 su = global_config.superusers
@@ -34,6 +35,42 @@ except Exception:
 class GameHook:
     def __init__(self):
         pass
+
+    @classmethod
+    async def get_info(cls,user_id: str, group_id: str):
+        """
+        获取用户信息
+        """
+        sender_user = await UserTable.get_user(user_id=user_id, group_id=group_id)
+        print('user', dict(sender_user))
+        
+        last_sign = await UserTable.get_last_sign(user_id, group_id)
+        # 判断是否已签到
+        today = date.today()
+        logger.debug(f"last_sign: {last_sign}")
+        logger.debug(f"today: {today}")
+
+        bg_img = sender_user.bg_img or ''
+        # 是否签到
+        is_sign = today == last_sign
+        is_ok, sign_img_file = user_2_img(
+            nickname=sender_user.nickname,
+            bg_path=bg_img,
+            user_id=user_id,
+            group_id=group_id,
+            data=dict(sender_user),
+            is_sign=is_sign
+        )
+        if is_ok:
+            msg =MessageSegment.at(user_id = user_id) + MessageSegment.image(file=sign_img_file)
+            return msg
+        else:
+            msg_txt = MessageSegment.at(user_id = user_id)
+            msg_txt += f"当前金币：{sender_user.gold}\n"
+            msg_txt += f"是否签到：{'已签到' if is_sign else '未签到'}\n"
+
+            return Message(msg_txt)
+
 
     @classmethod
     async def create_game(cls, group_id: str, user_id: str, player_count: int = 3) -> Message:
