@@ -42,7 +42,8 @@ run_say = on_message(priority=0, block=False)
 recall_run = on_notice(priority=1, block=False)
 
 # 逼话排行榜
-say = on_fullmatch("逼话排行榜", priority=1, block=False)
+say_reg = r"^(今日|昨天|前天|本月|上月|今年|去年|全部)逼话排行榜|^逼话排行榜$"
+say = on_regex(say_reg, priority=1, block=False)
 
 # 查询自己指定时间逼话榜详情
 query_me_reg = r"^(今日|昨天|前天|本月|上月|今年|去年|全部)逼话$"
@@ -54,16 +55,51 @@ update_nickname = on_fullmatch("更新", priority=1, block=False)
 
 @say.handle()
 async def say_handle(bot: Bot, event: GroupMessageEvent):
-    # # 用户ID
-    # user_id = str(event.user_id)
+    # 获取消息内容
+    text = event.message.extract_plain_text().strip()
+
     # 获取群组ID
     group_id = str(event.group_id)
 
-    await bot.send(event=event, message="今日逼话排行榜正在准备中，请稍后...")
+    # 获取用户ID
+    user_id = str(event.user_id)
 
-    msg = await get_say_list(group_id)
-    await bot.send(event=event, message=msg)
+    # 获取匹配的月份或日期
+    match = re.match(say_reg, text)
+    logger.debug(f'match：{match}')
+    if match:
+        date = match.group(1)
+        if not date:
+            date = "今日"
+        await bot.send(event=event, message=f"{date}逼话排行榜正在准备中，请稍后...")
 
+        msg = await get_say_list(date_str=date ,group_id=group_id)
+        await bot.send(event=event, message=msg)
+
+
+
+@query_me.handle()
+async def query_me_handle(bot: Bot, event: GroupMessageEvent):
+    # 获取消息内容
+    text = event.message.extract_plain_text().strip()
+
+    # 获取群组ID
+    group_id = str(event.group_id)
+
+    # 获取用户ID
+    user_id = str(event.user_id)
+
+    # 获取匹配的月份或日期
+    match = re.match(query_me_reg, text)
+    logger.debug(f'match：{match}')
+    if match:
+        date = match.group(1)
+        # await get_says(date_str=date, group_id=group_id, user_id=user_id)
+        await bot.send(event=event, message=f"{date}逼话正在准备中，请稍后...")
+        msg = await get_user_say(date_str=date, user_id=user_id, group_id=group_id)
+
+        # 查询指定时间的逼话排行榜
+        await bot.send(event=event, message=msg)
 
 @update_nickname.handle()
 async def update_nickname_handle(bot: Bot, event: GroupMessageEvent):
@@ -135,29 +171,6 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
 
     await save_user_say(user_id, group_id, sender, data)
 
-
-@query_me.handle()
-async def query_me_handle(bot: Bot, event: GroupMessageEvent):
-    # 获取消息内容
-    text = event.message.extract_plain_text().strip()
-
-    # 获取群组ID
-    group_id = str(event.group_id)
-
-    # 获取用户ID
-    user_id = str(event.user_id)
-
-    # 获取匹配的月份或日期
-    match = re.match(query_me_reg, text)
-    logger.debug(f'match：{match}')
-    if match:
-        date = match.group(1)
-        # await get_says(date_str=date, group_id=group_id, user_id=user_id)
-        await bot.send(event=event, message=f"{date}逼话正在准备中，请稍后...")
-        msg = await get_user_say(date_str=date, user_id=user_id, group_id=group_id)
-
-        # 查询指定时间的逼话排行榜
-        await bot.send(event=event, message=msg)
 
 
 @recall_run.handle()

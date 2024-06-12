@@ -39,6 +39,7 @@ async def save_user_say(user_id: str, group_id: str, sender, data) -> Message:
 async def get_user_say(date_str: str, user_id: str, group_id: str) -> Message:
     """
     获取用户会话
+    :param date_str: 日期字符串
     :param user_id: 用户 ID
     :param group_id: 群组 ID
 
@@ -85,21 +86,29 @@ async def get_user_say(date_str: str, user_id: str, group_id: str) -> Message:
         return '生成错误'
 
 
-async def get_say_list(group_id) -> list:
+async def get_say_list(date_str:str,group_id:str) -> list:
     """
     获取用户在指定时间段内的数据
+    :param date_str: 日期字符串
     :param uid: 用户唯一ID
     :param start_time: 开始时间
     :return: 数据
     """
-    now = datetime.now()
-    # 获取今天最早的时间段
-    start_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
-    end_time = datetime(now.year, now.month, now.day) + timedelta(days=1)
+    # 开始查询日期
+    start_date = get_start_time(date_str)
+    end_date = get_end_time(date_str)
 
-    aggregated_says = await SayTable.get_the_charts(group_id, start_time, end_time)
+    print('start_date', start_date)
+    print('end_date', end_date)
 
-    is_ok, img_file = say2img(data=aggregated_says)
+    # now = datetime.now()
+    # # 获取今天最早的时间段
+    # start_time = datetime.now().replace(hour=0, minute=0, second=0, microsecond=0)
+    # end_time = datetime(now.year, now.month, now.day) + timedelta(days=1)
+
+    aggregated_says = await SayTable.get_the_charts(group_id, start_date, end_date)
+
+    is_ok, img_file = say2img(data=aggregated_says,date_str=date_str)
     if is_ok:
         return MessageSegment.image(file=img_file)
     else:

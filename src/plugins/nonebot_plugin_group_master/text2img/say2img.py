@@ -278,6 +278,7 @@ class TxtToImg:
     def run(
         self,
         data={},
+        date_str=''
     ) -> bytes:
         """将文本转换为图片"""
         bg_image_path = text_bg_path / f'bg-1.jpg'
@@ -325,7 +326,7 @@ class TxtToImg:
 
         image.paste(output_image, (0, 0))
 
-        header_text("今日逼话排行榜", image)
+        header_text(f"{date_str}逼话排行榜", image)
 
         img_byte = BytesIO()
         image.save(img_byte, format="PNG")
@@ -333,9 +334,10 @@ class TxtToImg:
         return True, img_byte
 
 
-def say2img(data={}):
+def say2img(data={},date_str=''):
     sayImg = TxtToImg()
 
     return sayImg.run(
         data=data,
+        date_str=date_str
     )
