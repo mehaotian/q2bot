@@ -53,6 +53,8 @@ query_me = on_regex(query_me_reg, priority=1, block=False)
 update_nickname = on_fullmatch("更新", priority=1, block=False)
 
 
+# help = on_fullmatch("逼话", priority=1, block=False)
+
 @say.handle()
 async def say_handle(bot: Bot, event: GroupMessageEvent):
     # 获取消息内容
