@@ -48,7 +48,7 @@ class RoulettePlayerTable(Model):
     shoot_count = fields.IntField(default=0)
     # 向自己开枪次数
     shoot_self_count = fields.IntField(default=0)
-    # 想别人开枪次数
+    # 向别人开枪次数
     shoot_other_count = fields.IntField(default=0)
 
     # 使用卡片次数
@@ -58,7 +58,7 @@ class RoulettePlayerTable(Model):
     skip_count = fields.IntField(default=0)
 
     # 筹码
-    chips = fields.IntField(default=100)
+    chips = fields.IntField(default=200)
 
     # 卡片槽位 4 个 [0,0,0,0]
     card_slot = fields.JSONField(default=[])
@@ -129,3 +129,19 @@ class RoulettePlayerTable(Model):
             return record
         except DoesNotExist:
             return None
+
+    @classmethod
+    async def get_game_count(cls, user_id: str, group_id: str):
+        """
+        获取当前用户游戏场次数量
+        参数：
+            - user_id: 用户id
+            - group_id: 群id
+        返回：
+            - int
+        """
+        try:
+            record = await cls.filter(user_id=user_id, group_id=group_id).count()
+            return record
+        except DoesNotExist:
+            return 0

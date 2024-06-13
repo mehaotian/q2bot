@@ -11,6 +11,10 @@ docker compose up -d
 docker compose down
 
 pip freeze > requirements.txt
+pip install -r requirements.txt
+win:  .\.venv\Scripts\activate  
+
+uvloop==0.17.0;sys_platform != 'win32'
 ```
 
 ## psql

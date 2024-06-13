@@ -33,17 +33,23 @@ except Exception:
 
 
 class GameHook:
+
+    # 记录流程信息，多个流程合并为一条信息
+    flowMsg = ''
+    # 本局筹码
+    chips = 200
+
     def __init__(self):
         pass
 
     @classmethod
-    async def get_info(cls,user_id: str, group_id: str):
+    async def get_info(cls, user_id: str, group_id: str):
         """
         获取用户信息
         """
         sender_user = await UserTable.get_user(user_id=user_id, group_id=group_id)
         print('user', dict(sender_user))
-        
+
         last_sign = await UserTable.get_last_sign(user_id, group_id)
         # 判断是否已签到
         today = date.today()
@@ -61,19 +67,25 @@ class GameHook:
             data=dict(sender_user),
             is_sign=is_sign
         )
+
+        # 查询用户参与了多少场游戏
+        game_count = await RoulettePlayerTable.get_game_count(user_id, group_id)
+
+        print('game_count', game_count)
+
         if is_ok:
-            msg =MessageSegment.at(user_id = user_id) + MessageSegment.image(file=sign_img_file)
+            msg = MessageSegment.at(user_id=user_id) + \
+                MessageSegment.image(file=sign_img_file)
             return msg
         else:
-            msg_txt = MessageSegment.at(user_id = user_id)
+            msg_txt = MessageSegment.at(user_id=user_id)
             msg_txt += f"当前金币：{sender_user.gold}\n"
             msg_txt += f"是否签到：{'已签到' if is_sign else '未签到'}\n"
 
             return Message(msg_txt)
 
-
     @classmethod
-    async def create_game(cls, group_id: str, user_id: str, player_count: int = 5) -> Message:
+    async def create_game(cls, group_id: str, user_id: str, player_count: int = 5,chips=200) -> Message:
         """
         开关游戏
         参数：
@@ -98,8 +110,10 @@ class GameHook:
             await roulette.save(update_fields=['player_count', 'user_id'])
 
             at = MessageSegment.at(user_id)
-            msg = at + ' 和喵叽酱一起轮盘赌叭，输了嘻嘻嘻~（坏心思），输入 「/参与战局」 参与游戏！'
-
+            msg = at + f' 和喵叽酱一起轮盘赌叭，输了嘻嘻嘻~（坏心思），输入 「/参与战局」 参与游戏！本局输赢：{chips} 金币!\n'
+            
+            # 本局筹码
+            cls.chips = chips
             # 添加游戏定时任务，需要10分钟后无响应关闭
             cls.set_scheduler(type=1, user_id=user_id, group_id=group_id)
             return Message(msg)
@@ -121,7 +135,7 @@ class GameHook:
             uid = record.user_id
 
             if user_id != uid and user_id not in su:
-                return Message(MessageSegment.text('只有创建者才能结束游戏'))
+                return Message(MessageSegment.text('喵叽提醒:只有创建者才能结束游戏'))
 
             # 关闭游戏
             await RouletteGameTable.close_game(record.id)
@@ -137,7 +151,7 @@ class GameHook:
             cls.end_scheduler(task_id)
             cls.end_scheduler(task_play_id)
 
-            return Message(MessageSegment.text('游戏结束,因为是游戏未结束，所以没有胜者，且不会有任何奖励！'))
+            return Message(MessageSegment.text('喵叽提醒:游戏结束,因为是游戏未结束，所以没有胜者，且不会有任何奖励！'))
         else:
             return Message(MessageSegment.text('游戏不存在,或您非游戏发起者！'))
 
@@ -158,16 +172,33 @@ class GameHook:
             print('is_player', player)
             if player:
                 return Message(at+MessageSegment.text(' 喵叽提醒：身在局中，请勿重复加入！'))
-
+            
+        
             game_players = await RoulettePlayerTable.get_game_players(record.id)
 
             if game_players and len(game_players) >= record.player_count:
                 return Message(at+MessageSegment.text(f' 喵叽提醒：满了满了，下次在进来好吗？'))
+
+            # 如果游戏已经开始，则不允许加入
+            if record.status == 1:
+                return Message(at+MessageSegment.text(' 喵叽提醒：游戏已经开始，请等待下一轮！'))
+
+
+            user = await UserTable.get_user(user_id=user_id, group_id=group_id)
+            if user.gold < cls.chips:
+                return Message(at+MessageSegment.text(f' 喵叽提醒：加入战局失败，您的金币不足，最低要求为：{cls.chips}金币，您有：{user.gold}金币！'))
+
             # 参与游戏
             player = await RoulettePlayerTable.create_player(group_id, user_id, record.id)
 
             if not player:
                 return Message(at+MessageSegment.text(' 参与游戏失败！'))
+            
+             # 设置筹码
+            player.chips = cls.chips
+
+            await player.save(update_fields=['chips'])
+
             msg = at + \
                 f' （囚笼）可爱的喵叽酱俘虏了你，变为棋子叭~烧年~\n战局最多{record.player_count}人，当前已有{len(game_players)+1}人。'
 
@@ -390,10 +421,11 @@ class GameHook:
             winner_id = player_seat[0]
             at = MessageSegment.at(winner_id)
             msg = '让我们恭喜' + at + '获得最后的胜利！呱唧呱唧！'
-            if not bot:
-                await bots.send_group_msg(group_id=gid, message=msg)
-            else:
-                await bot.send(event=event, message=msg)
+            # if not bot:
+            #     await bots.send_group_msg(group_id=gid, message=msg)
+            # else:
+            #     await bot.send(event=event, message=msg)
+            cls.flowMsg += msg + '\n'
 
             player = await RoulettePlayerTable.get_player(game_id=record.id, uid=winner_id)
             player.status = 1
@@ -403,10 +435,15 @@ class GameHook:
             record.status = 2
 
             await record.save(update_fields=['winner_id', 'status'])
-            if not bot:
-                await bots.send_group_msg(group_id=gid, message='本轮游戏结束！请等待结算~')
-            else:
-                await bot.send(event, '本轮游戏结束！请等待结算~')
+
+
+            # if not bot:
+            #     await bots.send_group_msg(group_id=gid, message='本轮游戏结束！请等待结算~')
+            # else:
+            #     await bot.send(event, '本轮游戏结束！请等待结算~')
+
+            cls.flowMsg += '本轮游戏结束！请等待结算~\n'
+
             players = await RoulettePlayerTable.filter(game_id=record.id).all()
             # 败方金币总额
             total_lose = 0
@@ -432,11 +469,14 @@ class GameHook:
                 user.gold += total_lose
                 await user.save(update_fields=['gold'])
                 msg = f'"{user.nickname}" 是最后的胜利者，赢得了 {total_lose} 金币，共有 {user.gold} 金币\n' + lose_msg
-                if not bot:
-                    await bots.send_group_msg(group_id=gid, message=msg)
-                else:
-                    await bot.send(event, msg)
 
+                cls.flowMsg += msg 
+
+                if not bot:
+                    await bots.send_group_msg(group_id=gid, message=cls.flowMsg)
+                else:
+                    await bot.send(event, cls.flowMsg)
+                cls.flowMsg = ''
             # 手动停止任务
             # 任务id
             task_id = f"{gid}_1"
@@ -472,12 +512,17 @@ class GameHook:
             bullet_list = [random.choice([0, 1]) for _ in range(bullet_count)]
             print('bullet_count', bullet_list)
             # msg += f'咔咔咔， {bullet_count}个子弹上膛，天知道有几个空包弹，希望你们能得到幸运鱼的照顾。'
-            msg += f'愚蠢的小手枪有{bullet_count}个房间，调皮的喵叽酱打翻了几个原住民~天知道还有几个在家，各位小心喽~'
-            await asyncio.sleep(1)
-            if not bot:
-                await bots.send_group_msg(group_id=gid, message=msg)
-            else:
-                await bot.send(event=event, message=msg)
+            # msg += f'愚蠢的小手枪有{bullet_count}个房间，调皮的喵叽酱打翻了几个原住民~天知道还有几个在家，各位小心喽~'
+            msg += f'咔咔子弹上膛，愿你得到幸运鱼的照顾。'
+
+            # 这是实时发送内容，为了避免刷屏，改为合并消息
+            # if not bot:
+            #     await bots.send_group_msg(group_id=gid, message=msg)
+            # else:
+            #     await bot.send(event=event, message=msg)
+
+            # 流程消息
+            cls.flowMsg += msg + '\n'
 
             # 进入抽卡阶段
             record.state = 1
@@ -494,12 +539,13 @@ class GameHook:
         if state == 1:
             # 开始抽卡
             # msg = '开始抽卡，本阶段每人将随机到的两张卡片，如背包已满，则无法获取新卡片\n'
-            msg = '喵叽酱给每人两张卡片，如果你装不下，那就丢掉了嗷~ 做人不要贪得无厌嘛~\n'
-
+            # msg = '现在喵叽酱要给每给参与者两张卡片，如果你的背包装不下，那喵叽酱就只能丢掉了嗷~\n'
+            msg = ''
             # 获取游戏玩家
             game_players = await RoulettePlayerTable.get_game_players(record.id)
 
             cards = ['恢复', '伤害', '预言', '保护', '伪装', '禁锢', '强制']
+            msg += '喵叽酱要开始发卡啦~，请注意：\n\n'
 
             for player in game_players:
                 card_slot = player.card_slot
@@ -509,7 +555,6 @@ class GameHook:
 
                 # 获取at用户
                 at = MessageSegment.at(player.user_id)
-
                 if num_cards_to_add > 0:
                     selected_cards = random.sample(cards, num_cards_to_add)
                     player.card_slot.extend(selected_cards)
@@ -521,11 +566,15 @@ class GameHook:
                 else:
                     card_slot_str = ' '.join(player.card_slot)
                     msg += at + f' 的卡包: 「{card_slot_str}」 (已满，无获得)\n'
-            await asyncio.sleep(1)
-            if not bot:
-                await bots.send_group_msg(group_id=gid, message=msg)
-            else:
-                await bot.send(event=event, message=Message(msg))
+
+            # 这是实时发送内容，为了避免刷屏，改为合并消息
+            # if not bot:到你开枪喽~
+            #     await bots.send_group_msg(group_id=gid, message=msg)
+            # else:
+            #     await bot.send(event=event, message=Message(msg))
+
+            # 流程消息
+            cls.flowMsg += msg + '\n'
 
             # 抽卡结束，进入前置buff判定阶段
             record.state = 2
@@ -544,12 +593,16 @@ class GameHook:
             player = await RoulettePlayerTable.get_player(game_id=record.id, uid=current_user_id)
             debuff = player.debuff
             at = MessageSegment.at(current_user_id)
-            msg = at + ' 到你开枪喽~让我看看倒霉蛋在哪里~'
-            await asyncio.sleep(1)
-            if not bot:
-                await bots.send_group_msg(group_id=gid, message=msg)
-            else:
-                await bot.send(event=event, message=msg)
+            msg = at + ' 到你回合喽~请开始你的表演吧~'
+
+            # 这是实时发送内容，为了避免刷屏，改为合并消息
+            # if not bot:
+            #     await bots.send_group_msg(group_id=gid, message=msg)
+            # else:
+            #     await bot.send(event=event, message=msg)
+
+            # 流程消息
+            cls.flowMsg += msg + '\n'
 
             if not debuff:
                 # 无判定直接进入下一个用卡阶段
@@ -559,6 +612,7 @@ class GameHook:
                     await cls.game_flowing(user_id=uid, group_id=gid)
                 else:
                     await cls.game_flowing(bot, event)
+
                 return
 
             else:
@@ -577,10 +631,16 @@ class GameHook:
                     record.state = 0
 
                     await record.save(update_fields=['state', 'current_user_id'])
-                    if not bot:
-                        await bots.send_group_msg(group_id=gid, message=at+'【禁锢】生效，本轮你无法行动！')
-                    else:
-                        await bot.send(event=event, message=at+'【禁锢】生效，本轮你无法行动！')
+
+                    # 这是实时发送内容，为了避免刷屏，改为合并消息
+                    # if not bot:
+                    #     await bots.send_group_msg(group_id=gid, message=at+'【禁锢】生效，本轮你无法行动！')
+                    # else:
+                    #     await bot.send(event=event, message=at+'【禁锢】生效，本轮你无法行动！')
+
+                    # 流程消息
+                    cls.flowMsg += at + '【禁锢】生效，本轮你无法行动！\n'
+
                     if not bot:
                         await cls.game_flowing(user_id=uid, group_id=gid)
                     else:
@@ -591,10 +651,15 @@ class GameHook:
                     # 预留到开枪的时候使用
                     record.state = 3
                     await record.save(update_fields=['state'])
-                    if not bot:
-                        await bots.send_group_msg(group_id=gid, message=msg)
-                    else:
-                        await bot.send(event=event, message=at+'【强制】生效，接下来你只能攻击自己嗷~')
+
+                    # 这是实时发送内容，为了避免刷屏，改为合并消息
+                    # if not bot:
+                    #     await bots.send_group_msg(group_id=gid, message=at+'【强制】生效，接下来你只能攻击自己嗷~')
+                    # else:
+                    #     await bot.send(event=event, message=at+'【强制】生效，接下来你只能攻击自己嗷~')
+
+                    # 流程消息
+                    cls.flowMsg += at+'【强制】生效，接下来你只能攻击自己嗷~\n'
 
                     if not bot:
                         await cls.game_flowing(user_id=uid, group_id=gid)
@@ -619,22 +684,33 @@ class GameHook:
                 else:
                     await cls.game_flowing(bot, event)
             else:
-                await asyncio.sleep(1)
-                msg = at + f' 你的卡包：「{" ".join(card_slot)}」，是否使用卡片？'
+                msg = at + f' 卡包：「{" ".join(card_slot)}」，宝宝要使用卡片吗？如不使用可以直接开枪哦~'
+
+                # 流程消息
+                cls.flowMsg += msg
                 if not bot:
-                    await bots.send_group_msg(group_id=gid, message=msg)
+                    await bots.send_group_msg(group_id=gid, message=cls.flowMsg)
                 else:
-                    await bot.send(event=event, message=msg)
-                # 发生提问，流程暂停，等待提问接受
+                    await bot.send(event=event, message=cls.flowMsg)
+
+                # 发生提问，流程暂停，等待提问接受,清空流程消息
+                cls.flowMsg = ''
+                return
 
         if state == 5:
-            await asyncio.sleep(1)
             at = MessageSegment.at(record.current_user_id)
             msg = at + ' 小骚年，举起你的大枪，让我看看你的实力~'
+
+            # 流程消息
+            cls.flowMsg += msg
+
             if not bot:
-                await bots.send_group_msg(group_id=gid, message=msg)
+                await bots.send_group_msg(group_id=gid, message=cls.flowMsg)
             else:
-                await bot.send(event=event, message=msg)
+                await bot.send(event=event, message=cls.flowMsg)
+
+            # 等待开枪，流程暂停，等待提问接受,并清空流程消息
+            cls.flowMsg = ''
 
         print('流程结束')
 
@@ -748,7 +824,7 @@ class GameHook:
                 bullet_str = ' '.join(bullet_display)
 
                 msg = Message(
-                    at+f' 使用了【{card_name}】，你似乎看到了枪管内部的结构：\n {bullet_str}\n')
+                    at+f' 使用了【{card_name}】，你似乎看到了枪管内部的结构：\n [{bullet_str}] \n')
 
         if card_name == '恢复':
             if player.life >= 3:
@@ -758,7 +834,7 @@ class GameHook:
                 player.life += 1
                 await player.save(update_fields=['life'])
                 msg = Message(
-                    at+MessageSegment.text(f'使用了【{card_name}】，生命值 up ⬆️，当前生命值：{player.life}'))
+                    at+MessageSegment.text(f'使用了【{card_name}】，生命值 up ⬆️，当前生命值：{player.life}\n'))
 
         # 从背包中删除对应卡片
         card_slot.remove(card_name)
@@ -766,9 +842,15 @@ class GameHook:
         await player.save(update_fields=['card_slot'])
 
         if len(card_slot) > 0:
-            await bot.send(event=event, message=msg+'是否继续使用卡片？')
+            msg += '是否继续使用卡片？'
+            cls.flowMsg += msg 
+            await bot.send(event=event, message=cls.flowMsg)
+            cls.flowMsg = ''
         else:
-            await bot.send(event=event, message=msg)
+            # 这是实时发送内容，为了避免刷屏，改为合并消息
+            # await bot.send(event=event, message=msg)
+            # 流程消息
+            cls.flowMsg += msg + '\n'
             record.state = 5
             await record.save(update_fields=['state'])
             # 进入下一个流程
@@ -864,17 +946,25 @@ class GameHook:
         user_at = MessageSegment.at(target)
 
         if str(target) == str(user_id):
-            msg += '你颤颤巍巍的将枪顶住自己的脑门，扣下了扳机！只听 “啪” 一声！'
+            msg += '你颤颤巍巍的将枪顶住自己的脑门，扣下了扳机！只听 “啪” 一声！\n'
         else:
             msg = MessageSegment.text('你意气风发的将枪抵在了 ') + \
-                user_at+MessageSegment.text(' 的脑门，说：再见了朋友！')
+                user_at+MessageSegment.text(' 的脑门，说：再见了朋友！\n')
 
-        await asyncio.sleep(1)
-        await bot.send(event=event, message=msg)
+        # 这是实时发送内容，为了避免刷屏，改为合并消息
+        # await bot.send(event=event, message=msg)
+
+        # 流程消息
+        # cls.flowMsg += msg + '\n'
 
         # 空弹自己
         if bullet_type == 0 and str(target) == str(user_id):
-            await bot.send(event=event, message=at+' 谢天谢地是空弹，接下来还是我的回合！')
+            msg += at + '毫发无伤：谢天谢地是空弹!!\n\n'
+            # 这是实时发送内容，为了避免刷屏，改为合并消息
+            # await bot.send(event=event, message=cls.flowMsg)
+
+            # 流程消息
+            cls.flowMsg += msg
 
             if current_bullet == -1:
                 record.state = 0
@@ -892,7 +982,13 @@ class GameHook:
 
         # 空弹别人
         if bullet_type == 0 and str(target) != str(user_id):
-            await bot.send(event=event, message=user_at+' 谢天谢地是空弹，到我了，宝贝儿！')
+            msg += user_at + '毫发无伤：谢天谢地是空弹!!\n\n'
+            # 这是实时发送内容，为了避免刷屏，改为合并消息
+            # await bot.send(event=event, message=user_at+' 谢天谢地是空弹，到我了，宝贝儿！')
+
+            # 流程消息
+            cls.flowMsg += msg
+
             # 只要是换人，都从 0 开始
             record.state = 0
             # 当前参赛人员
@@ -953,12 +1049,16 @@ class GameHook:
                 new_player.status = 2
                 await new_player.save(update_fields=['status'])
             else:
-                msg += new_at + f' 剩余 {new_player.life} 命。\n'
+                msg += new_at + f' 剩余 {new_player.life} 命。\n\n'
 
-            await bot.send(event=event, message=msg)
+            # 这是实时发送内容，为了避免刷屏，改为合并消息
+            # await bot.send(event=event, message=msg)
+
+            # 流程消息
+            cls.flowMsg += msg
 
             # 判断是否回合结束
-            # 如果达到了自己，回合结束
+            # 如果打到了自己，回合结束
             if str(target) == str(user_id):
                 # 获取下一个人
                 next_current_id = cls.get_next_id(
@@ -979,7 +1079,7 @@ class GameHook:
             return None
         elif '保护' in buff:
             # 移除当前用户卡片效果
-            
+
             buff.remove('保护')
             user_player.buff = buff
             await user_player.save(update_fields=['buff'])
@@ -989,9 +1089,14 @@ class GameHook:
             await player.save(update_fields=['damage_rate'])
 
             msg = user_at + \
-                MessageSegment.text(' 使用了【保护】，避免了伤害。这一波，我在第十层！\n')
+                MessageSegment.text(' 使用了【保护】，避免了伤害。这一波，我在第十层！\n\n')
 
-            await bot.send(event=event, message=msg)
+            # 这是实时发送内容，为了避免刷屏，改为合并消息
+            # await bot.send(event=event, message=msg)
+
+            # 流程消息
+            cls.flowMsg += msg
+
 
             # 当前参赛人员
             player_seat = record.player_seat[:]
@@ -1025,24 +1130,26 @@ class GameHook:
             player_seat = record.player_seat[:]
 
             if user_player.life == 0:
-                msg += user_at + f'被 '+at+' 击中，生命被清空，遗憾出局！'
+                msg += user_at + f'被 '+at+' 击中，生命被清空，遗憾出局！\n'
                 # 移除出局的玩家
                 record.player_seat.remove(target)
                 await record.save(update_fields=['player_seat'])
                 user_player.status = 2
                 await user_player.save(update_fields=['status'])
             else:
-                msg += user_at + '被 '+at+f' 击中，剩余 {user_player.life} 命\n'
+                msg += user_at + '被 '+at+f' 击中，剩余 {user_player.life} 命\n\n'
 
-            await bot.send(event=event, message=msg)
-            print('target', target)
-            print('user_id', user_id)
-            # 如果达到了自己，回合结束
+            # 这是实时发送内容，为了避免刷屏，改为合并消息
+            # await bot.send(event=event, message=msg)
+
+            # 流程消息
+            cls.flowMsg += msg
+
+            # 如果打到了自己，回合结束
             if str(target) == str(user_id):
                 # 获取下一个人
                 next_current_id = cls.get_next_id(
                     player_seat, record.current_user_id)
-                print('next_current_id', next_current_id)
                 # 换人
                 record.current_user_id = next_current_id
                 record.state = 0
@@ -1108,6 +1215,7 @@ class GameHook:
         msg = MessageSegment.image(img)
 
         return msg
+
     @classmethod
     def game_help_card(cls):
         """
@@ -1133,7 +1241,7 @@ class GameHook:
         msg = MessageSegment.image(img)
 
         return msg
-    
+
     @classmethod
     def game_help_instruct(cls):
         """

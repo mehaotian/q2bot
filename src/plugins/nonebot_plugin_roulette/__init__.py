@@ -47,10 +47,10 @@ use_card_aliases = ['使用卡片', '使用卡牌', '就你了', '吃我一招',
 use_card = on_command(use_card_aliases[0], aliases=set(
     use_card_aliases[1:]), priority=1, block=True)
 # 跳过阶段
-skip_aliases = ['跳过', 'pass','skip', 'p']
+skip_aliases = ['跳过', 'pass','skip', '过']
 skip = on_command(skip_aliases[0], aliases=set(skip_aliases[1:]), priority=1, block=True)
 # 开枪阶段
-pa_aliases = ['开枪','shoot' ,'peng', 'pa']
+pa_aliases = ['开枪','shoot' ,'peng', 'pa', 'p']
 pa = on_command(pa_aliases[0], aliases=set(pa_aliases[1:]), priority=1, block=True)
 
 # 查询当前流程
@@ -73,12 +73,32 @@ async def start_game_handle(bot: Bot, event: GroupMessageEvent):
     uid = str(event.user_id)
     gid = str(event.group_id)
     msg = MsgText(event.json())
+    msg = re.sub(' +', ' ', msg)
     params = msg.split(" ")
+
+    print(params[1])
 
     if not params or params[0][1:] not in start_game_aliases:
         return await bot.send(event, f"指令错误, 示例：/{start_game_aliases[0]}")
+    
 
-    msg = await GameHook.create_game(group_id=gid, user_id=uid)
+    # 筹码
+    chips = 200
+    if len(params) > 1:
+        chips = params[1]
+        if not chips.isdigit():
+            return await bot.send(event, f"喵叽提醒：筹码必须是数字")
+        chips = int(chips)
+
+    # 玩家数量
+    player_count = 5
+    if len(params) > 2:
+        player_count = params[2]
+        if not player_count.isdigit():
+            return await bot.send(event, f"喵叽提醒：玩家数量必须是数字")
+        player_count = int(player_count)
+
+    msg = await GameHook.create_game(group_id=gid, user_id=uid,chips=chips,player_count=player_count)
     await bot.send(event, msg)
 
 
