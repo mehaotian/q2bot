@@ -28,7 +28,7 @@ class Record:
 record = Record(cleanliness=100, happiness=100, sleep=100, fatigue=0, hunger=0)
 game = Game(record=record)
 
-for i in range(24):
+for i in range(240):
     game.tick()
     print(game.cat)
 
