@@ -171,6 +171,10 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
         'total_count': total_count
     }
 
+    if textCount > 100:
+        msg = MessageSegment.reply(event.message_id) + MessageSegment.text(f"疑似恶意刷刷屏，当前不计入逼话，并警告一次！")
+        return await bot.send(event=event, message=msg)
+
     await save_user_say(user_id, group_id, sender, data)
 
 
