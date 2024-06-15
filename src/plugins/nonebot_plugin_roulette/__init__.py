@@ -76,8 +76,6 @@ async def start_game_handle(bot: Bot, event: GroupMessageEvent):
     msg = re.sub(' +', ' ', msg)
     params = msg.split(" ")
 
-    print(params[1])
-
     if not params or params[0][1:] not in start_game_aliases:
         return await bot.send(event, f"指令错误, 示例：/{start_game_aliases[0]}")
     

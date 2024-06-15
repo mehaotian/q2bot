@@ -11,6 +11,7 @@ import re
 from nonebot import (
     on_message,
     on_fullmatch,
+    on_command,
     on_notice,
     on_regex
 )
@@ -22,9 +23,11 @@ from nonebot.adapters.onebot.v11 import (
     NoticeEvent,
     ActionFailed,
 )
+from nonebot.rule import to_me
 from nonebot.typing import T_State
 from nonebot.log import logger
 from nonebot import require
+from .utils import MsgText, At
 
 
 try:
@@ -32,7 +35,7 @@ try:
 except Exception:
     scheduler = None
 
-from .serivce.say_source import get_say_list, save_user_say, get_user_say, get_say_total
+from .serivce.say_source import get_say_list, save_user_say, get_user_say, get_say_total,get_lottery_month,lottery_user
 from .models.user_model import UserTable
 
 # 监听用户消息
@@ -52,6 +55,8 @@ query_me = on_regex(query_me_reg, priority=1, block=False)
 # 更新用户昵称
 update_nickname = on_fullmatch("更新", priority=1, block=False)
 
+# 逼话限定抽奖
+bihua_kaijiang = on_command("本月逼话开奖",rule=to_me(), priority=9, block=True)
 
 # help = on_fullmatch("逼话", priority=1, block=False)
 
@@ -77,6 +82,36 @@ async def say_handle(bot: Bot, event: GroupMessageEvent):
 
         msg = await get_say_list(date_str=date ,group_id=group_id)
         await bot.send(event=event, message=msg)
+
+
+@bihua_kaijiang.handle()
+async def bihua_kaijiang_handle(bot: Bot, event: GroupMessageEvent):
+    # 获取消息内容
+    # 获取群组ID
+    group_id = str(event.group_id)
+    msg = MsgText(event.json())
+    msg = re.sub(' +', ' ', msg)
+    params = msg.split(" ")
+
+    if len(params) == 2:
+        command = params[1]
+        if not command.isdigit():
+            return await bot.send(event, f"喵叽提醒：逼话保底数字错误")
+        
+        textCount = int(command)
+        await bot.send(event=event, message=f"抽奖封箱，资格查询中,保底为： {textCount}，请稍后...")
+    
+        msg,data = await get_lottery_month(group_id=group_id,textCount=textCount)
+
+        await bot.send(event=event, message=msg)
+        await bot.send(event=event, message=f"抽奖资格已生成，摇奖中，请稍后...")
+        
+        user_msg = await lottery_user(data=data,textCount=textCount)
+        await bot.send(event=event, message=user_msg)
+
+
+    else:
+        return await bot.send(event, f"喵叽提醒：逼话保底数字错误")
 
 
 

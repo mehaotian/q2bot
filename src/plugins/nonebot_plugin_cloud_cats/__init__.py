@@ -18,7 +18,6 @@ import_module('.models', __package__)
 import_module('.core', __package__)
 # 设置本地化
 locale.setlocale(locale.LC_TIME, 'zh_CN.UTF-8')
-# db_url = 'postgresql://wuhao:1qaz!QAZ@bot.mehaotian.com:5432/botdb_dev'
 
 __plugin_meta__ = PluginMetadata(
     name="nonebot_plugin_cloud_cats",

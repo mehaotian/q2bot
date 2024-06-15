@@ -6,6 +6,7 @@ from .config import Config,global_config
 from apscheduler.jobstores.sqlalchemy import SQLAlchemyJobStore
 from nonebot_plugin_apscheduler import scheduler
 from nonebot.log import logger
+from .config import global_config
 
 from . import (
     welcome,
@@ -18,9 +19,9 @@ from . import (
 # 设置本地化
 locale.setlocale(locale.LC_TIME, 'zh_CN.UTF-8')
 
-# db_url = global_config.db_url
-db_url = 'postgresql://wuhao:1qaz!QAZ@bot.mehaotian.com:5432/botdb_dev'
-
+scheduler_db_url = global_config.scheduler_db_url
+# db_url = 'postgresql://wuhao:1qaz!QAZ@bot.mehaotian.com:5432/botdb_dev'
+print("scheduler_db_url ----- :",scheduler_db_url)
 require("nonebot_plugin_tortoise_orm")
 
 
@@ -36,7 +37,7 @@ __plugin_meta__ = PluginMetadata(
 
 # 设置定时任务持久化
 try:
-    scheduler.add_jobstore(SQLAlchemyJobStore(url=db_url), 'default')
+    scheduler.add_jobstore(SQLAlchemyJobStore(url=scheduler_db_url), 'default')
     logger.success('Jobstore 持久化成功')
 except Exception as e:
     logger.error(f'Jobstore 持久化失败: {e}')

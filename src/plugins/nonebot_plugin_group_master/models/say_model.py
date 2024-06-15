@@ -97,9 +97,9 @@ class SayTable(Model):
         获取指定群指定时间之后所有用户的排行信息
         """
         # 获取一个时间段
-        # 获取所有满足条件的记录
+        # 获取所有满足条件的记录，前20条
         says = await SayTable.filter(created_at__gte=start_time,created_at__lte=end_time).values()
-
+        print('says 逼话数量', len(says))
         # 使用字典进行分组
         grouped_says = defaultdict(list)
         for say in says:

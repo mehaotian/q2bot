@@ -42,7 +42,6 @@ async def handle_sign_in(user_id: int, group_id: int, sender) -> Message:
         user_id=user_id,
         group_id=group_id,
     )
-
     last_sign = await UserTable.get_last_sign(user_id, group_id)
     # 判断是否已签到
     today = date.today()
@@ -118,6 +117,10 @@ async def handle_change_bg(bot: Bot, user_id: int, group_id: int, message: Messa
     for msg in message:
         if msg.type == "image":
             file = msg.data["file"]
+            # 如果 file 不是 http 或者https 开头的，那么就取 url
+            if not file.startswith("http"):
+                file = msg.data["url"]
+
             logger.debug(f"file: {file}")
             break  # 找到file后，中断for循环
 

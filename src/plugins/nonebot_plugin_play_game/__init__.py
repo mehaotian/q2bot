@@ -108,7 +108,6 @@ async def _(bot: Bot, event: Event):
 @play_game.handle()
 async def _(bot: Bot, event: Event):
     json_data = getJson()
-    print('test 11111')
     json_data = [item for item in json_data if item.get('游戏名称', None) != None]
     if json_data is not None:
         # 随机一条数据
