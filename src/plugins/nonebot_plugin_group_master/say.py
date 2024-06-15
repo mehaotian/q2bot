@@ -23,6 +23,9 @@ from nonebot.adapters.onebot.v11 import (
     NoticeEvent,
     ActionFailed,
 )
+from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
+from nonebot.permission import SUPERUSER
+
 from nonebot.rule import to_me
 from nonebot.typing import T_State
 from nonebot.log import logger
@@ -56,7 +59,7 @@ query_me = on_regex(query_me_reg, priority=1, block=False)
 update_nickname = on_fullmatch("更新", priority=1, block=False)
 
 # 逼话限定抽奖
-bihua_kaijiang = on_command("本月逼话开奖",rule=to_me(), priority=9, block=True)
+bihua_kaijiang = on_command("本月逼话开奖",rule=to_me(),permission=SUPERUSER | GROUP_ADMIN | GROUP_OWNER, priority=9, block=True)
 
 # help = on_fullmatch("逼话", priority=1, block=False)
 
