@@ -28,7 +28,43 @@ class ZyPlayerTable(Model):
     # 群组 ID
     group_id = fields.CharField(max_length=255, default="")
 
-    # 玩家状态 0 未加入 1 游戏中 
+    # 只因名字
+    z_name = fields.CharField(max_length=255, default="")
+    # 只因大小
+    z_size = fields.IntField(default=1)
+    # 只因等级
+    z_level = fields.IntField(default=1)
+    # 只因经验
+    z_exp = fields.IntField(default=0)
+    # 只因币
+    z_coin = fields.IntField(default=0)
+    # 只因体力
+    z_power = fields.IntField(default=0)
+
+    # 只因攻击
+    z_attack = fields.IntField(default=0)
+    # 只因防御
+    z_defense = fields.IntField(default=0)
+    # 只因速度
+    z_speed = fields.IntField(default=0)
+    # 只因暴击
+    z_crit = fields.IntField(default=0)
+    # 只因命中
+    z_hit = fields.IntField(default=0)
+    # 只因闪避
+    z_dodge = fields.IntField(default=0)
+    # 只因技能
+    z_skill = fields.IntField(default=0)
+    # 只因装备,额外加成
+    z_equipment = fields.IntField(default=0)
+
+    # 只因状态
+    z_status = fields.IntField(default=0)
+
+    # 只因称号, 额外加成
+    z_title = fields.CharField(max_length=255, default="")
+
+    # 玩家状态 0 未加入 1 游戏中
     status = fields.IntField(default=0)
 
     # 创建时间
@@ -37,4 +73,21 @@ class ZyPlayerTable(Model):
     class Meta:
         table = "zhiyin_player_table"
         table_description = "只因大冒险玩家表"
-    
+
+    @classmethod
+    async def get_player(cls, game_id: str, gid: str, uid: str) -> 'ZyPlayerTable':
+        """
+        获取玩家
+        参数：
+            - gid: 群号
+            - uid: 用户 ID
+        返回：
+            - ZyPlayerTable
+        """
+        # try:
+        #     return await cls.get(game_id=game_id, group_id=gid, user_id=uid)
+        # except DoesNotExist:
+        #     # 创建玩家
+        #     return await cls.create(game_id=game_id, group_id=gid, user_id=uid)
+        record, _ = await cls.get_or_create(game_id=game_id, group_id=gid, user_id=uid)
+        return record

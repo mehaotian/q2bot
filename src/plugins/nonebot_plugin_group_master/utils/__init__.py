@@ -172,3 +172,19 @@ def MsgText(data: str):
         return msg_text
     except:
         return ''
+    
+def Reply(data: str):
+    """
+    检测回复哪条消息，返回 reply 对象
+    如果没有回复任何人，返回 None
+    :param data: event.json()
+    :return: dict | None
+    """
+    try:
+        data = json.loads(data)
+        if data['reply'] and data['reply']['message_id']:  # 待优化
+            return data['reply']
+        else:
+            return None
+    except KeyError:
+        return None

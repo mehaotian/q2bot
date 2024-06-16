@@ -30,7 +30,7 @@ from nonebot.rule import to_me
 from nonebot.typing import T_State
 from nonebot.log import logger
 from nonebot import require
-from .utils import MsgText, At
+from .utils import MsgText, Reply
 
 
 try:
@@ -74,6 +74,7 @@ async def say_handle(bot: Bot, event: GroupMessageEvent):
     # 获取用户ID
     user_id = str(event.user_id)
 
+    
     # 获取匹配的月份或日期
     match = re.match(say_reg, text)
     logger.debug(f'match：{match}')
@@ -166,6 +167,8 @@ async def update_nickname_handle(bot: Bot, event: GroupMessageEvent):
 
 @run_say.handle()
 async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
+    # 是否回复
+    rp = Reply(event.json())
     # 获取经验
     # msg = await game.add_exp(event)
     # 获取用户消息
@@ -180,8 +183,8 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     # 每条记录
     total_count = 0
     for msg in message:
-        if msg.type == "reply":
-            replyCount += 1
+        # if msg.type == "reply":
+        #     replyCount += 1
         if msg.type == "image":
             imagesCount += 1
         if msg.type == "face":
@@ -192,6 +195,9 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
                 # 如果存在则不插入
                 if user_id not in at_user_ids:
                     at_user_ids.append(user_id)
+    
+    if rp:
+        replyCount += 1
 
     total_count += 1
 

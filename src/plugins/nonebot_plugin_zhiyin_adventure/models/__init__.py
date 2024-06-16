@@ -8,7 +8,7 @@ add_model(__name__, db_name='zhiyindb', db_url=db_url)
 
 try:
     from . import zhiyin_game
-    ZyGameTable = zhiyin_game.RouletteGameTable
+    ZyGameTable = zhiyin_game.ZyGameTable
     logger.success('ZyGameTable 模型加载成功')
 except Exception as e:
     print(e)
@@ -17,7 +17,7 @@ except Exception as e:
 
 try:
     from . import zhiyin_player
-    ZyPlayerTable = zhiyin_player.RoulettePlayerTable
+    ZyPlayerTable = zhiyin_player.ZyPlayerTable
     logger.success('ZyPlayerTable 模型加载成功')
 except Exception as e:
     print(e)
