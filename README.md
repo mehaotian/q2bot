@@ -17,6 +17,11 @@ win:  .\.venv\Scripts\activate
 uvloop==0.17.0;sys_platform != 'win32'
 ```
 
+## 运行
+```shell
+nb run --reload
+```
+
 ## psql
 
 ```shell
