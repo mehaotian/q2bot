@@ -7,6 +7,7 @@ from ..config import text_bg_path, static_path
 
 font_path = str(static_path / "KNMaiyuan-Regular.ttf")
 
+
 def adjust_image(image_path, target_width, target_height):
     """
     调整图片大小
@@ -68,7 +69,7 @@ def adjust_image(image_path, target_width, target_height):
     return new_img
 
 
-def header_text(text_str, image,textCount=None):
+def header_text(text_str, image, textCount=None, top_text='TOP', top_title="榜单"):
     """
     绘制头部文字
     :param text: 文字
@@ -112,8 +113,8 @@ def header_text(text_str, image,textCount=None):
     # 字体行距
     lines_space = 12
 
-    if textCount:
-        text_str = f'本月逼话 {textCount} 资格抽奖'
+    # if textCount:
+    #     text_str = f'本月逼话 {textCount} 资格抽奖'
 
     content_font = ImageFont.truetype(font_path, 24)
     content_width, _ = content_font.getsize(text_str)
@@ -128,7 +129,7 @@ def header_text(text_str, image,textCount=None):
     x = margin + 10
     y = top + 10
 
-    text = f'TOP'
+    text = top_text
     text_width, text_height = top_font.getsize(text)
 
     text_img = Image.new(
@@ -137,11 +138,11 @@ def header_text(text_str, image,textCount=None):
 
     # 制作阴影效果
     # 描边效果
-    text_draw.text(xy=(0, 3), text=f'TOP', fill="#f4362a",
+    text_draw.text(xy=(0, 3), text=text, fill="#f4362a",
                    font=top_font, spacing=lines_space)
     # 文字旋转
 
-    text_draw.text(xy=(3, 0), text=f'TOP', fill="#fff",
+    text_draw.text(xy=(3, 0), text=text, fill="#fff",
                    font=top_font, spacing=lines_space)
     # 文字旋转
     rotated_text_img = text_img.rotate(10, expand=1)
@@ -153,8 +154,8 @@ def header_text(text_str, image,textCount=None):
                 int(paste_y)), rotated_text_img)
     if textCount:
         text = '抽奖'
-    else:    
-        text = '榜单'
+    else:
+        text = top_title
     bd_font = ImageFont.truetype(font_path, 78)
     bd_text_width, bd_text_height = top_font.getsize(text)
 
@@ -180,7 +181,7 @@ def content_text(data, index, height=40):
     :return: 绘制后的图片
     """
     user = data.get('users', {})
-    nickname = user.get('nickname', '') 
+    nickname = user.get('nickname', '')
     # 获取总数
     total = data.get('total', 0)
 
@@ -226,7 +227,8 @@ def content_text(data, index, height=40):
     img = img.resize((img_width, img_height))
 
     # 创建大小
-    item_img = Image.new("RGBA", (width - margin*2, height + 10), (255, 255, 255, 0))
+    item_img = Image.new(
+        "RGBA", (width - margin*2, height + 10), (255, 255, 255, 0))
 
     header_img = Image.new("RGBA", (box_width, box_height), (255, 255, 255, 0))
 
@@ -238,7 +240,7 @@ def content_text(data, index, height=40):
 
     # 创建一个用于绘制的Draw对象
     draw = ImageDraw.Draw(item_img)
-    
+
     # # 字体行距
     lines_space = 12
 
@@ -256,13 +258,13 @@ def content_text(data, index, height=40):
         sub_text = sub_text[:19] + '...'
 
     title_color = '#000' if index < 3 else '#666'
- 
-    draw.text(xy=(box_width + 10, 5), text=text, fill= title_color,
+
+    draw.text(xy=(box_width + 10, 5), text=text, fill=title_color,
               font=title_text, spacing=lines_space)
     title_text = ImageFont.truetype(font_path, 15)
     draw.text(xy=(box_width + 10, 27), text=sub_text, fill="#666",
               font=title_text, spacing=lines_space)
-    
+
     # 排行数字
     if index > 2:
         rank_text = ImageFont.truetype(font_path, 14)
@@ -284,24 +286,39 @@ class TxtToImg:
         self,
         data={},
         date_str='',
-        textCount=None
+        textCount=None,
+        top_text='TOP',
+        top_title="榜单",
+        title=""
     ) -> bytes:
         """将文本转换为图片"""
         bg_image_path = text_bg_path / f'bg-1.jpg'
         font = ImageFont.truetype(font_path, 14)
+        if not title:
+            title = f"{date_str}逼话排行榜"
+        
         lines_space = 8
         img_width = 500
         # 最小基础高度，12条数据
         img_height = 870
 
-
         # 迭代次数
         lice = 15
-        # 筛选 data.total >= textCount
-        if textCount and textCount > 0:
-            data = [item for item in data if item.get('total', 0) >= textCount]
-            lice = len(data)
 
+        print('top_text', title)
+        # 抽奖本月
+        if top_title == '抽奖':
+            if textCount and textCount > 0:
+                data = [item for item in data if item.get('total', 0) >= textCount]
+                lice = len(data)
+            else:
+                data = []
+
+        # 活跃用户查询
+        if top_text == '活跃':
+            data = [item for item in data if item.get('total', 0) >= 0]
+            lice = len(data)
+            title += f'，共 {lice} 人'
 
         # 渲染列表的内容高度
         content_top = 192
@@ -313,16 +330,14 @@ class TxtToImg:
 
         if lice > 12:
             lines_height = lice - 12
-            img_height += (lines_height * margin_height) 
-
-        
+            img_height += (lines_height * margin_height)
 
         # 这是不要背景 ，纯文字
         image = Image.new("RGBA", (img_width, img_height), '#ffffff')
 
         background_image_path = Path("resource") / bg_image_path
 
-         # 创建一个新的RGBA图像，大小为目标显示区域的尺寸
+        # 创建一个新的RGBA图像，大小为目标显示区域的尺寸
         output_image = Image.new(
             "RGBA", (img_width, img_height), (255, 255, 255, 0))
 
@@ -331,25 +346,24 @@ class TxtToImg:
         # 将调整后的图片粘贴到输出图像中，以居中显示
         output_image.paste(bg_img, (0, 0))
 
-      
-        
-        
-        for index, item in islice(enumerate(data), lice) :
+        for index, item in islice(enumerate(data), lice):
             content_img = content_text(item, index, content_height)
             output_image.paste(content_img, (margin, content_top), content_img)
             content_top += margin_height
 
-        if len(data) < lice:
+        if len(data) < lice or lice == 0:
             draw = ImageDraw.Draw(output_image)
             text = '--- 虚位以待 ---'
-            font_width,_ = font.getsize(text)
+            font_width, _ = font.getsize(text)
             draw.text(xy=((img_width-font_width)//2, content_top + 20), text=text, fill="#999",
-                        font=font, spacing=lines_space)
-
+                      font=font, spacing=lines_space)
 
         image.paste(output_image, (0, 0))
 
-        header_text(f"{date_str}逼话排行榜", image,textCount)
+
+
+        header_text(text_str=title, image=image, textCount=textCount,
+                    top_text=top_text, top_title=top_title)
 
         img_byte = BytesIO()
         image.save(img_byte, format="PNG")
@@ -357,11 +371,14 @@ class TxtToImg:
         return True, img_byte
 
 
-def say2img(data={},date_str='',textCount=None):
+def say2img(data={}, date_str='', textCount=None, top_text='TOP', top_title="榜单", title=""):
     sayImg = TxtToImg()
 
     return sayImg.run(
         data=data,
         date_str=date_str,
-        textCount=textCount
+        textCount=textCount,
+        top_text=top_text,
+        top_title=top_title,
+        title=title
     )

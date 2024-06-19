@@ -112,7 +112,7 @@ async def get_say_list(date_str: str, group_id: str) -> list:
         return Message("生成失败")
 
 
-async def get_lottery_month(group_id: str, textCount: int = 2000) -> Message:
+async def get_lottery_month(group_id: str, textCount: int = 2000,time='本周') -> Message:
     """
     获取用户在指定时间段内的数据
     :param date_str: 日期字符串
@@ -121,13 +121,13 @@ async def get_lottery_month(group_id: str, textCount: int = 2000) -> Message:
     :return: 数据
     """
     # 开始查询日期
-    start_date = get_start_time('本月')
-    end_date = get_end_time('本月')
+    start_date = get_start_time(time)
+    end_date = get_end_time(time)
 
     aggregated_says = await SayTable.get_the_charts(group_id, start_date, end_date)
 
     is_ok, img_file = say2img(data=aggregated_says,
-                              date_str='本月', textCount=textCount)
+                              date_str=time, textCount=textCount,top_title="抽奖", title=f"{time}逼话 {textCount} 抽奖资格")
     # return Message("生成成功"), aggregated_says
 
     if is_ok:
@@ -136,7 +136,7 @@ async def get_lottery_month(group_id: str, textCount: int = 2000) -> Message:
         return Message("生成失败"), None
 
 
-async def lottery_user(data,textCount):
+async def lottery_user(data, textCount):
     """
     本月逼话摇奖
     :param data: 数据
@@ -145,7 +145,10 @@ async def lottery_user(data,textCount):
     """
     # 获取符合要求逼话的用户
     data = [item for item in data if item.get('total', 0) >= textCount]
-    
+
+    if not data and len(data) == 0:
+        return '没有符合要求的用户'
+
     # 从 data 中随机一个数据出来
     user = random.choice(data)
     print('user', user)
@@ -158,7 +161,7 @@ async def lottery_user(data,textCount):
                 at = MessageSegment.at(user_id)
                 return at + MessageSegment.image(file=file)
         return '好像抽到一个不存在的人，请重新抽奖'
-        
+
     else:
         return '可能是因为网络波动，抽奖发生错误，请重新抽奖'
         # msg = (
@@ -167,7 +170,33 @@ async def lottery_user(data,textCount):
         # )
 
 
+async def get_today_active(group_id: str,):
+    """
+    获取今日活跃用户
+    """
+    # 开始查询日期
+    start_date = get_start_time('今日')
+    end_date = get_end_time('今日')
+
+    aggregated_says = await SayTable.get_the_charts(group_id, start_date, end_date)
+
+    is_ok, img_file = say2img(data=aggregated_says, textCount= 0,
+                              date_str='今日', top_text='活跃', top_title="榜单", title="今日活跃排行")
+
+    if is_ok:
+        return MessageSegment.image(file=img_file)
+    else:
+        return Message("生成失败")
+
+
 async def get_say_total(group_id: str):
+    """
+    获取用户在指定时间段内的数据
+    :param date_str: 日期字符串
+    :param uid: 用户唯一ID
+    :param start_time: 开始时间
+    :return: 数据
+    """
 
     now = datetime.now()
     # 获取今天最早的时间段

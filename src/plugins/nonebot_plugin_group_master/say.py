@@ -38,7 +38,7 @@ try:
 except Exception:
     scheduler = None
 
-from .serivce.say_source import get_say_list, save_user_say, get_user_say, get_say_total,get_lottery_month,lottery_user
+from .serivce.say_source import get_say_list, save_user_say, get_user_say, get_say_total, get_lottery_month, lottery_user, get_today_active
 from .models.user_model import UserTable
 
 # 监听用户消息
@@ -48,20 +48,26 @@ run_say = on_message(priority=0, block=False)
 recall_run = on_notice(priority=1, block=False)
 
 # 逼话排行榜
-say_reg = r"^(今日|昨天|前天|本月|上月|今年|去年|全部)逼话排行榜|^逼话排行榜$"
+say_reg = r"^(今日|昨天|前天|本周|上周|本月|上月|今年|去年|全部)逼话排行榜|^逼话排行榜$"
 say = on_regex(say_reg, priority=1, block=False)
 
 # 查询自己指定时间逼话榜详情
-query_me_reg = r"^(今日|昨天|前天|本月|上月|今年|去年|全部)逼话$"
+query_me_reg = r"^(今日|昨天|前天|本周|上周|本月|上月|今年|去年|全部)逼话$"
 query_me = on_regex(query_me_reg, priority=1, block=False)
+
+
+
+# 逼话限定抽奖
+bihua_kaijiang = on_command("逼话开奖", rule=to_me(
+), permission=SUPERUSER | GROUP_ADMIN | GROUP_OWNER, priority=9, block=True)
+
+# 今日活跃
+today_active = on_regex("^今日活跃$", permission=SUPERUSER |
+                        GROUP_ADMIN | GROUP_OWNER, priority=9, block=True)
+
 
 # 更新用户昵称
 update_nickname = on_fullmatch("更新", priority=1, block=False)
-
-# 逼话限定抽奖
-bihua_kaijiang = on_command("本月逼话开奖",rule=to_me(),permission=SUPERUSER | GROUP_ADMIN | GROUP_OWNER, priority=9, block=True)
-
-# help = on_fullmatch("逼话", priority=1, block=False)
 
 @say.handle()
 async def say_handle(bot: Bot, event: GroupMessageEvent):
@@ -74,7 +80,6 @@ async def say_handle(bot: Bot, event: GroupMessageEvent):
     # 获取用户ID
     user_id = str(event.user_id)
 
-    
     # 获取匹配的月份或日期
     match = re.match(say_reg, text)
     logger.debug(f'match：{match}')
@@ -84,7 +89,7 @@ async def say_handle(bot: Bot, event: GroupMessageEvent):
             date = "今日"
         await bot.send(event=event, message=f"{date}逼话排行榜正在准备中，请稍后...")
 
-        msg = await get_say_list(date_str=date ,group_id=group_id)
+        msg = await get_say_list(date_str=date, group_id=group_id)
         await bot.send(event=event, message=msg)
 
 
@@ -97,26 +102,46 @@ async def bihua_kaijiang_handle(bot: Bot, event: GroupMessageEvent):
     msg = re.sub(' +', ' ', msg)
     params = msg.split(" ")
 
-    if len(params) == 2:
-        command = params[1]
+    if len(params) >= 3:
+        time = params[1]
+        lt_reg = r"^(今日|昨天|前天|本周|上周|本月|上月|今年|去年|全部)$"
+        if not re.match(lt_reg, time):
+            return await bot.send(event, f"喵叽提醒：逼话开奖时间错误")
+
+        command = params[2]
+
+        if command == '查询':
+            # count =  params[3]
+            # 如果 params[3] 不存在则返回
+            if len(params) < 4:
+                return await bot.send(event, f"喵叽提醒：请输入查询字数")
+            count = params[3]
+
+            if not count.isdigit():
+                return await bot.send(event, f"喵叽提醒：逼话保底数字错误")
+            textCount = int(count)
+            await bot.send(event, f"{time}逼话抽奖资格查询中,保底为： {textCount}，请稍后...")
+
+            msg, data = await get_lottery_month(group_id=group_id, textCount=textCount, time=time)
+            
+            return await bot.send(event=event, message=msg)
+
         if not command.isdigit():
             return await bot.send(event, f"喵叽提醒：逼话保底数字错误")
-        
+
         textCount = int(command)
         await bot.send(event=event, message=f"抽奖封箱，资格查询中,保底为： {textCount}，请稍后...")
-    
-        msg,data = await get_lottery_month(group_id=group_id,textCount=textCount)
+
+        msg, data = await get_lottery_month(group_id=group_id, textCount=textCount, time=time)
 
         await bot.send(event=event, message=msg)
         await bot.send(event=event, message=f"抽奖资格已生成，摇奖中，请稍后...")
-        
-        user_msg = await lottery_user(data=data,textCount=textCount)
+
+        user_msg = await lottery_user(data=data, textCount=textCount)
         await bot.send(event=event, message=user_msg)
 
-
     else:
-        return await bot.send(event, f"喵叽提醒：逼话保底数字错误")
-
+        return await bot.send(event, f"喵叽提醒：逼话摇奖指令错误")
 
 
 @query_me.handle()
@@ -141,6 +166,26 @@ async def query_me_handle(bot: Bot, event: GroupMessageEvent):
 
         # 查询指定时间的逼话排行榜
         await bot.send(event=event, message=msg)
+
+
+@today_active.handle()
+async def today_active_handle(bot: Bot, event: GroupMessageEvent):
+    """
+    查询今日活跃用户
+    """
+    # 获取消息内容
+    # 获取群组ID
+    group_id = str(event.group_id)
+    msg = MsgText(event.json())
+    msg = re.sub(' +', ' ', msg)
+    params = msg.split(" ")
+
+    await bot.send(event=event, message=f"今日活跃逼友查询中，请稍后...")
+
+    msg = await get_today_active(group_id=group_id)
+
+    await bot.send(event=event, message=msg)
+
 
 @update_nickname.handle()
 async def update_nickname_handle(bot: Bot, event: GroupMessageEvent):
@@ -195,7 +240,7 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
                 # 如果存在则不插入
                 if user_id not in at_user_ids:
                     at_user_ids.append(user_id)
-    
+
     if rp:
         replyCount += 1
 
@@ -216,11 +261,11 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     }
 
     if textCount > 100:
-        msg = MessageSegment.reply(event.message_id) + MessageSegment.text(f"疑似恶意刷刷屏，当前不计入逼话，并警告一次！")
+        msg = MessageSegment.reply(event.message_id) + \
+            MessageSegment.text(f"当前内容疑似恶意刷屏，不计入逼话！如果是故意刷屏，将取消所有逼话抽奖资格，正常聊天则不受影响。")
         return await bot.send(event=event, message=msg)
 
     await save_user_say(user_id, group_id, sender, data)
-
 
 
 @recall_run.handle()
@@ -270,4 +315,4 @@ try:
         # post_scheduler, "interval", minutes=2, id="every_2_minutes"
     )
 except ActionFailed as e:
-    logger.warning(f"定时任务添加失败，{repr(e)}") 
+    logger.warning(f"定时任务添加失败，{repr(e)}")

@@ -35,6 +35,11 @@ def get_start_time(text):
     elif text == "前天":
         day_before_yesterday = now - timedelta(days=2)
         return datetime(day_before_yesterday.year, day_before_yesterday.month, day_before_yesterday.day)
+    elif text == "本周":
+        return datetime(now.year, now.month, now.day) - timedelta(days=now.weekday())
+    elif text == "上周":
+        last_week = now - timedelta(weeks=1)
+        return datetime(last_week.year, last_week.month, last_week.day) - timedelta(days=last_week.weekday())
     elif text == "本月":
         return datetime(now.year, now.month, 1)
     elif text == "上月":
@@ -62,6 +67,13 @@ def get_end_time(text):
         return datetime(now.year, now.month, now.day)
     elif text == "前天":
         return datetime(now.year, now.month, now.day) - timedelta(days=1)
+    elif text == "本周":
+        # 本周最后一天，59:59：59
+        return datetime(now.year, now.month, now.day) + timedelta(days=6 - now.weekday()) + timedelta(days=1) - timedelta(seconds=1)
+    elif text == "上周":
+        # 上周最后一天，59:59：59
+        last_week = now - timedelta(weeks=1)
+        return datetime(last_week.year, last_week.month, last_week.day) + timedelta(days=6 - last_week.weekday()) + timedelta(days=1) - timedelta(seconds=1)
     elif text == "本月":
         # 本月最后一天，59:59：59
         return datetime(now.year, now.month + 1, 1) - timedelta(seconds=1)
