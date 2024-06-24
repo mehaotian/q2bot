@@ -86,7 +86,7 @@ class GameHook:
             - bool
         """
         record = await ZyGameTable.get_game(gid)
-        if record.status == 1:
+        if record and record.status == 1:
             return record
         return None
 
@@ -104,7 +104,7 @@ class GameHook:
         if not game:
             return False
         player = await ZyPlayerTable.get_player(game_id=game.id, gid=gid, uid=uid)
-        if player.status == 1:
+        if player and player.status == 1:
             return True
         return False
     

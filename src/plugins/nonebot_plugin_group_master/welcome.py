@@ -22,20 +22,26 @@ from nonebot.typing import T_State
 from nonebot.log import logger
 from .serivce.user_source import (
     create_user,
+    handle_is_supplement,
     handle_sign_in,
-    handle_change_bg
+    handle_change_bg,
+    set_supplement
 )
 
 # 指令集
 commands = {
     "sign_in": "签到",
     "sign_in_bg": "签到背景",
+    "sign_in_supplement": "补签"
 }
 
 # 签到
 sign = on_fullmatch(commands["sign_in"], priority=5, block=False)
 # 替换背景图
 replace_bg = on_command(commands["sign_in_bg"], priority=5, block=False)
+# 补签
+supplement = on_fullmatch(
+    commands["sign_in_supplement"], priority=5, block=False)
 
 
 @sign.handle()
@@ -58,7 +64,7 @@ async def _(bot: Bot, state: T_State, event: GroupMessageEvent):
     user_id = str(event.user_id)
     group_id = str(event.group_id)
     at = MessageSegment.at(event.user_id)
-    
+
     state['user_id'] = user_id
     state['group_id'] = group_id
     state['reply_msg'] = Message(f'{at} 请发送一张图片替换签到背景，图片尽量清晰一些。')
@@ -99,4 +105,43 @@ async def _(bot: Bot, state: T_State, event: Event):
 
             await replace_bg.reject(msg+'，输入「取消」中断当前操作', at_sender=True)
 
-    # await replace_bg.finish(msg, at_sender=True)
+
+@supplement.handle()
+async def supplement_sign_in(bot: Bot, state: T_State, event: GroupMessageEvent):
+    """
+    补签
+    """
+    user_id = str(event.user_id)
+    group_id = str(event.group_id)
+    logger.debug(f"群 group_id: 用户 {user_id} 补签")
+    is_ok, msg = await handle_is_supplement(user_id=user_id, group_id=group_id, sender=event.sender)
+    # await bot.send(event=event, message=msg)
+    # 阻止 got
+    if not is_ok:
+        await supplement.finish(msg, at_sender=True)
+
+    at = MessageSegment.at(event.user_id)
+    state['user_id'] = user_id
+    state['group_id'] = group_id
+    state['use_gold'] = is_ok
+    state['reply_msg'] = at + Message(msg)
+
+
+@supplement.got("date", prompt=MessageTemplate("{reply_msg}"))
+async def _(bot: Bot, state: T_State, event: Event):
+    """
+    补签
+    """
+    message = event.get_message()
+    msgdata = message.extract_plain_text().strip()
+
+    if msgdata == "2":
+        await supplement.finish('已经取消补签', at_sender=True)
+    elif msgdata == "1":
+        user_id = state['user_id']
+        group_id = state['group_id']
+        use_gold = state['use_gold']
+        msg = await set_supplement(user_id=user_id, group_id=group_id, use_gold=use_gold)
+        await supplement.finish(msg, at_sender=True)
+    else:
+        await supplement.finish('输入错误，已取消补签', at_sender=True)

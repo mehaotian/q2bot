@@ -49,11 +49,11 @@ class TxtToImg:
 
         # 整体图片的宽高
         box_width = 500
-        box_height = 630
+        box_height = 680
 
         if is_sign:
             # 如果已经签到，高度减少两行，一行50
-            box_height = 580
+            box_height = 630
 
         # 这是不要背景 ，纯文字
         image = Image.new("RGBA", (box_width, box_height), '#ffffff')
@@ -203,6 +203,16 @@ class TxtToImg:
                 font=title_font,
                 spacing=lines_space
             )
+            # 获取金币数量
+            text_y += 50
+            gold = data.get('today_gold', 0)
+            draw_table.text(
+                xy=(text_x, text_y),
+                text=f'获得金币：+{gold} (共：{data.get("all_gold", 0)}个)',
+                fill="#6d786f",
+                font=title_font,
+                spacing=lines_space
+            )
         else:
             # 已经签到的情况
             # 内容文本高度为50 ，没增加一行要自增50
@@ -224,6 +234,17 @@ class TxtToImg:
                 font=title_font,
                 spacing=lines_space
             )
+            # 获取金币数量
+            text_y += 50
+            gold = data.get('gold', 0)
+            draw_table.text(
+                xy=(text_x, text_y),
+                text=f'您有金币：{gold} 个',
+                fill="#6d786f",
+                font=title_font,
+                spacing=lines_space
+            )
+            
 
         img_byte = BytesIO()
         image.save(img_byte, format="PNG")
