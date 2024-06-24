@@ -144,8 +144,15 @@ async def handle_is_supplement(user_id, group_id, sender):
 
         # 需要最低当前金币的50% 最高金币的80% ，且四舍五入
         use_gold = round(gold * (randint(50, 80) / 100))
-        diff = round(days/(sign_count-1))
-        use_gold = use_gold * diff
+        # print('gold',gold)
+        # print('use_gold',use_gold)
+
+        diff = days/(sign_count-1)
+        # print('days',days)
+        # print('sign_count',sign_count)
+        # print('diff',diff)
+
+        use_gold = round(use_gold * diff)
 
         return use_gold, f'你需要补签{days}天，消耗金币{use_gold}个（共 {gold}个），回复【1】补签，回复【2】取消补签。'
 
