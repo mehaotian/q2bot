@@ -9,29 +9,35 @@
 '''
 from nonebot import (
     on_fullmatch,
-    on_regex
+    on_regex,
+    on_message
 )
 from nonebot.adapters.onebot.v11 import (
     Bot,
-    Message,
     GroupMessageEvent,
-    MessageSegment,
 )
+from nonebot.matcher import Matcher
 from nonebot.rule import to_me
 
 from ..hooks.game_hook import GameHook
+from ..hooks.player_hook import PlayerHook
 
+# 创建游戏
 gameReg = r"^\s*(开启|关闭)只因大冒险\s*$"
 game = on_regex(gameReg, rule=to_me(), priority=20, block=True)
 
-
+# 加入游戏
 join_game = on_fullmatch("加入只因世界", rule=to_me(), priority=20, block=True)
+
+
+# 监听用户消息
+run_game = on_message(priority=0, rule=GameHook.have_player, block=False)
 
 
 @game.handle()
 async def game_handle(bot: Bot, event: GroupMessageEvent):
     gid = str(event.group_id)
-   
+
     msgdata = event.get_message()
     msgdata = msgdata.extract_plain_text().strip()
 
@@ -47,9 +53,19 @@ async def game_handle(bot: Bot, event: GroupMessageEvent):
 
 
 @join_game.handle()
-async def join_game_handle(bot: Bot, event: GroupMessageEvent):
+async def join_game_handle(bot: Bot, matcher: Matcher, event: GroupMessageEvent):
     gid = str(event.group_id)
     uid = str(event.user_id)
-    msg = await GameHook.join_game(gid=gid,uid=uid)
+    msg = await GameHook.join_game(gid=gid, uid=uid)
 
-    await bot.send(event=event, message=msg)
+    await matcher.send(message=msg, at_sender=True)
+
+
+@run_game.handle()
+async def run_game_handle(bot: Bot, matcher: Matcher, event: GroupMessageEvent):
+    game = await GameHook.check_game(str(event.group_id))
+    
+    player = PlayerHook(bot=bot, event=event,game=game)
+
+    print("run_game_handle:11111")
+    player.set_coin(100)

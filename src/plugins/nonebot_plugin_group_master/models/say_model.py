@@ -68,7 +68,6 @@ class SayTable(Model):
             # 获取 data 中所有的keys
             keys = data.keys()
             new_data = {}
-            print('keys', keys)
             # 更新数据
             for key in keys:
                 # 获取data中的值
