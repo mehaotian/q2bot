@@ -30,7 +30,8 @@ from nonebot.rule import to_me
 from nonebot.typing import T_State
 from nonebot.log import logger
 from nonebot import require
-from .utils import MsgText, Reply
+from .utils import MsgText, Reply,check_func_status
+
 
 
 try:
@@ -80,6 +81,9 @@ async def say_handle(bot: Bot, event: GroupMessageEvent):
     # 获取用户ID
     user_id = str(event.user_id)
 
+    if not await check_func_status('逼话榜', group_id):
+        return await say.finish('逼话功能未开启')
+
     # 获取匹配的月份或日期
     match = re.match(say_reg, text)
     logger.debug(f'match：{match}')
@@ -98,6 +102,10 @@ async def bihua_kaijiang_handle(bot: Bot, event: GroupMessageEvent):
     # 获取消息内容
     # 获取群组ID
     group_id = str(event.group_id)
+
+    if not await check_func_status('逼话榜', group_id):
+        return await bihua_kaijiang.finish('逼话功能未开启')
+
     msg = MsgText(event.json())
     msg = re.sub(' +', ' ', msg)
     params = msg.split(" ")
@@ -152,6 +160,9 @@ async def query_me_handle(bot: Bot, event: GroupMessageEvent):
     # 获取群组ID
     group_id = str(event.group_id)
 
+    if not await check_func_status('逼话榜', group_id):
+        return await query_me.finish('逼话功能未开启')
+
     # 获取用户ID
     user_id = str(event.user_id)
 
@@ -176,6 +187,11 @@ async def today_active_handle(bot: Bot, event: GroupMessageEvent):
     # 获取消息内容
     # 获取群组ID
     group_id = str(event.group_id)
+
+
+    if not await check_func_status('逼话榜', group_id):
+        return await today_active.finish('逼话功能未开启')
+
     msg = MsgText(event.json())
     msg = re.sub(' +', ' ', msg)
     params = msg.split(" ")
@@ -192,6 +208,10 @@ async def update_nickname_handle(bot: Bot, event: GroupMessageEvent):
     # 获取用户消息
     user_id = str(event.user_id)
     group_id = str(event.group_id)
+
+    if not await check_func_status('逼话榜', group_id):
+        return await update_nickname.finish('逼话功能未开启')
+
     # 准备信息
     msg = MessageSegment.at(user_id)
 
@@ -212,6 +232,11 @@ async def update_nickname_handle(bot: Bot, event: GroupMessageEvent):
 
 @run_say.handle()
 async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
+    gid = str(event.group_id)
+
+    if not await check_func_status('逼话榜', gid):
+        return
+
     # 是否回复
     rp = Reply(event.json())
     # 获取经验

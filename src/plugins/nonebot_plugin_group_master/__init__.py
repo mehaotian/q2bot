@@ -12,7 +12,8 @@ from . import (
     welcome,
     say,
     steam,
-    lottery
+    lottery,
+    group_admin,
 )
 
 

@@ -27,6 +27,7 @@ from .serivce.user_source import (
     handle_change_bg,
     set_supplement
 )
+from .utils import check_func_status
 
 # 指令集
 commands = {
@@ -51,9 +52,15 @@ async def sign_in(bot: Bot, event: GroupMessageEvent):
     """
     user_id = str(event.user_id)
     group_id = str(event.group_id)
+
+    # 检查是否开启签到功能
+    if not await check_func_status('签到', group_id):
+        return await sign.finish('签到功能未开启')
+    
     logger.debug(f"群 group_id: 用户 {user_id} 签到")
     msg = await handle_sign_in(user_id, group_id, event.sender)
     await bot.send(event=event, message=msg)
+
 
 
 @replace_bg.handle()
@@ -65,11 +72,16 @@ async def _(bot: Bot, state: T_State, event: GroupMessageEvent):
     group_id = str(event.group_id)
     at = MessageSegment.at(event.user_id)
 
+    # 检查是否开启签到背景功能
+    if not await check_func_status('签到', group_id):
+        return await replace_bg.finish('签到背景功能未开启')
+
     state['user_id'] = user_id
     state['group_id'] = group_id
     state['reply_msg'] = Message(f'{at} 请发送一张图片替换签到背景，图片尽量清晰一些。')
 
     await create_user(user_id, group_id, event.sender)
+    
 
 
 @replace_bg.got("bg", prompt=MessageTemplate('{reply_msg}'))
@@ -113,6 +125,9 @@ async def supplement_sign_in(bot: Bot, state: T_State, event: GroupMessageEvent)
     """
     user_id = str(event.user_id)
     group_id = str(event.group_id)
+    if not await check_func_status('签到', group_id):
+        await supplement.finish('补签功能未开启', at_sender=True)
+
     logger.debug(f"群 group_id: 用户 {user_id} 补签")
     is_ok, msg = await handle_is_supplement(user_id=user_id, group_id=group_id, sender=event.sender)
     # await bot.send(event=event, message=msg)
@@ -125,6 +140,7 @@ async def supplement_sign_in(bot: Bot, state: T_State, event: GroupMessageEvent)
     state['group_id'] = group_id
     state['use_gold'] = is_ok
     state['reply_msg'] = at + Message(msg)
+    
 
 
 @supplement.got("date", prompt=MessageTemplate("{reply_msg}"))

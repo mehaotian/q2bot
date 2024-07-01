@@ -35,7 +35,8 @@ from .serivce.lottery_source import (
     get_lottery_history,
     get_lottery_history_detail
 )
-from .utils import MsgText, At
+from .utils import MsgText, At,check_func_status
+
 
 from .config import global_config
 
@@ -59,6 +60,10 @@ async def lottery_handle(bot: Bot, event: GroupMessageEvent):
     msg = MsgText(event.json())
     params = msg.split(" ")
     gid = str(event.group_id)
+
+    if not await check_func_status('抽奖', gid):
+        return await bot.send(event, '本群未开启 抽奖 功能')
+
     uid = str(event.user_id)
     at = MessageSegment.at(uid) + ' '
 
@@ -211,6 +216,9 @@ async def join_in_handle(matcher: Matcher, event: GroupMessageEvent, state: T_St
     lottery_list = await get_lottery_list(gid=gid)
     # lottery_list = []
     state['uid'] = uid
+    if not await check_func_status('抽奖', gid):
+        return await matcher.finish('本群未开启 抽奖 功能')
+        
     state['gid'] = gid
     indexs = []
     if len(lottery_list) > 1:

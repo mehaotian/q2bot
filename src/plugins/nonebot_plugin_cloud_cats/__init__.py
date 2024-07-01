@@ -14,8 +14,8 @@ from importlib import import_module
 #     game
 # )
 
-import_module('.models', __package__)
-import_module('.core', __package__)
+# import_module('.models', __package__)
+# import_module('.core', __package__)
 # 设置本地化
 locale.setlocale(locale.LC_TIME, 'zh_CN.UTF-8')
 
@@ -29,11 +29,11 @@ __plugin_meta__ = PluginMetadata(
     supported_adapters={"~onebot.v11"},
 )
 
-# 设置定时任务持久化
-try:
-    cat_scheduler_db_url = global_config.cat_scheduler_db_url
-    scheduler.add_jobstore(SQLAlchemyJobStore(
-        url=cat_scheduler_db_url), 'catsqljob')
-    logger.success('Cat Jobstore 持久化成功')
-except Exception as e:
-    logger.error(f'Cat Jobstore 持久化失败: {e}')
+# # 设置定时任务持久化
+# try:
+#     cat_scheduler_db_url = global_config.cat_scheduler_db_url
+#     scheduler.add_jobstore(SQLAlchemyJobStore(
+#         url=cat_scheduler_db_url), 'catsqljob')
+#     logger.success('Cat Jobstore 持久化成功')
+# except Exception as e:
+#     logger.error(f'Cat Jobstore 持久化失败: {e}')

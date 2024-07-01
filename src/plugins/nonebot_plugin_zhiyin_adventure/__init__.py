@@ -5,8 +5,8 @@ from .config import global_config, Config
 
 from importlib import import_module
 
-import_module('.models', __package__)
-import_module('.core', __package__)
+# import_module('.models', __package__)
+# import_module('.core', __package__)
 
 
 # su = global_config.superusers

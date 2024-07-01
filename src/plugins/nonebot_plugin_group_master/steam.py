@@ -19,6 +19,7 @@ from nonebot.adapters.onebot.v11 import (
 from nonebot.log import logger
 from .utils import MsgText, At
 from .serivce.steam_source import bind_steam_user, get_steam_id, query_steam_user
+from .utils import check_func_status
 
 # 查询
 steam = on_command('steam', priority=1, block=True)
@@ -31,6 +32,10 @@ async def steam_handle(bot: Bot, event: GroupMessageEvent):
     gid = str(event.group_id)
     uid = str(event.user_id)
     sender = event.sender
+
+    # 检查是否开启steam功能
+    if not await check_func_status('steam', gid):
+        return await steam.finish('本群未开启 Steam 功能')
 
     # 如果第一个不存在或第一个参数不是 /steam 则返回错误
     if not params or params[0] != '/steam':
