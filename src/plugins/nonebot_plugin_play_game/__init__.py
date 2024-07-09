@@ -31,11 +31,13 @@ update_excel = on_command("更新游戏文档", priority=5, block=False)
 # 更新 excel
 update_cookie = on_command("更新cookie", priority=5, block=False)
 # 查询 excel
-query_excel = on_command("鸽子屋", priority=5, block=False)
+query_excel = on_command("鹅子屋", priority=5, block=False)
 # 随个游戏
 play_game = on_command("随个游戏", priority=5, block=False)
 # 今晚玩啥
 play_here = on_command("今晚玩它", priority=5, block=False)
+
+ezi_choujiang = on_command("抽奖统计", priority=5, block=False)
 
 
 @update_excel.handle()
@@ -53,6 +55,7 @@ async def _(bot: Bot, event: Event):
 
     # 导出文件任务url
     export_excel_url = f'https://docs.qq.com/v1/export/export_office'
+    
     # 获取导出任务的操作id
     operation_id = tx.export_excel_task(export_excel_url)
 
@@ -60,7 +63,7 @@ async def _(bot: Bot, event: Event):
         await update_excel.finish("更新文档失败，请检查cookie是否过期")
 
     check_progress_url = f'https://docs.qq.com/v1/export/query_progress?operationId={operation_id}'
-    file_name = f'鸽子屋.xlsx'
+    file_name = f'鹅子屋.xlsx'
     tx.download_excel(check_progress_url, file_name)
 
     await update_excel.finish("更新游戏文档成功")
@@ -87,9 +90,9 @@ async def handle_divorce(state: T_State, event: Event):
 
 @query_excel.handle()
 async def _(bot: Bot, event: Event):
-    url = 'https://docs.qq.com/sheet/DQXpTb3hFaWdYWVZP'
+    url = document_url
     msg = (
-        f'鸽子屋游戏文档：\n'
+        f'鹅子屋游戏文档：\n'
         f'{url}'
     )
 
@@ -104,10 +107,23 @@ async def _(bot: Bot, event: Event):
     #     # 如果 JSON 数据为 None，可以根据需要采取其他措施
     #     await query_excel.finish("获取失败，请使用 「更新游戏文档」命令更新文档")
 
+@ezi_choujiang.handle()
+async def _(bot: Bot, event: Event):
+    url = 'https://docs.qq.com/sheet/DQXpTb3hFaWdYWVZP'
+    msg = (
+        f'抽奖统计：\n'
+        f'{url}'
+    )
+
+    await query_excel.finish(Message(msg))
 
 @play_game.handle()
 async def _(bot: Bot, event: Event):
     json_data = getJson()
+
+    if not json_data:
+        await play_game.finish("指令执行失败，原因是发生错误，请联系大鹅检查")
+
     json_data = [item for item in json_data if item.get('游戏名称', None) != None]
     if json_data is not None:
         # 随机一条数据
@@ -127,17 +143,15 @@ async def _(bot: Bot, event: Event):
 @play_here.handle()
 async def _(bot: Bot, event: Event):
     json_data = getJson()
-    json_data = [item for item in json_data if item.get('今晚玩它', False) == True]
+    json_data = [item for item in json_data if item.get('今晚玩它', None) == '是']
 
     if json_data is not None:
         # 随机数据中 key 为 今晚玩它的值是 True 的数据
         if len(json_data) == 0:
-            url = 'https://docs.qq.com/sheet/DQXpTb3hFaWdYWVZP'
-
             await play_here.finish((
-                f'你还没有勾选药丸的游戏 ，请在鸽子屋中勾选后再来吧，记得更新文档哦～\n'
-                f'鸽子屋游戏文档：\n'
-                f'{url}'
+                f'你还没有勾选药丸的游戏 ，请在鹅子屋中勾选后再来吧，记得更新文档哦～\n'
+                f'鹅子屋游戏文档：\n'
+                f'{document_url}'
             ))
         # 在这里使用 JSON 数据进行进一步处理
         else:

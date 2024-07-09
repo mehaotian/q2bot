@@ -106,5 +106,5 @@ if __name__ == '__main__':
     # 获取导出任务的操作id
     operation_id = tx.export_excel_task(export_excel_url)
     check_progress_url = f'https://docs.qq.com/v1/export/query_progress?u={now_user_index}&operationId={operation_id}'
-    file_name = f'鸽子屋.xlsx'
+    file_name = f'鹅子屋.xlsx'
     tx.download_excel(check_progress_url, file_name)
