@@ -1,0 +1,90 @@
+<head>
+  <meta charset="utf-8" />
+  <link rel="stylesheet" href="./mystyle.css" />
+  <!-- {% if css %}
+  <style type="text/css">
+    {{ css }}
+  </style>
+  {% else %} -->
+  <!-- <style type="text/css">
+    .text {
+      margin-top: 3px;
+    }
+    .main-box {
+      padding: 5 5 5 5 
+    }
+  </style> -->
+  <!-- {% endif %} -->
+</head>
+<body>
+  <div id="main" class="main-box">
+    <div class="header">
+      <div class="header-title">签到排行榜</div>
+      <div class="header-box">
+        <div class="header-item no2">
+          <div class="avator">
+            <img class="icon" src="./two.svg" alt="" />
+            {% if user2 %}
+            <img class="avatar-img" src="{{user2.avatar}}" alt="" />
+            {% endif %}
+          </div>
+          {% if user2 %}
+          <div class="nickname">{{user2.nickname}}</div>
+          <div class="sign-day">{{user2.sign_count}}天</div>
+          {% else %}
+          <div class="nickname">虚位以待</div>
+          {% endif %}
+        </div>
+        <div class="header-item no1">
+          <div class="avator">
+            <img class="icon" src="./one.svg" alt="" />
+            {% if user1 %}
+            <img class="avatar-img" src="{{user1.avatar}}" alt="" />
+            {% endif %}
+          </div>
+          {% if user1 %}
+          <div class="nickname">{{user1.nickname}}</div>
+          <div class="sign-day">{{user1.sign_count}}天</div>
+          {% else %}
+          <div class="nickname">虚位以待</div>
+          {% endif %}
+        </div>
+        <div class="header-item no3">
+          <div class="avator">
+            <img class="icon" src="./three.svg" alt="" />
+            {% if user3 %}
+            <img class="avatar-img" src="{{user3.avatar}}" alt="" />
+            {% endif %}
+          </div>
+          {% if user3 %}
+          <div class="nickname">{{user3.nickname}}</div>
+          <div class="sign-day">{{user3.sign_count}}天</div>
+          {% else %}
+          <div class="nickname">虚位以待</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    <div class="content">
+      <div class="content-box">
+        {% if after_users %}
+          {% for item in after_users %}
+          <div class="content-item">
+            <div class="index">{{loop.index+3}}.</div>
+            <div class="title">{{item.nickname}}</div>
+            <div class="day">{{item.sign_count}}天</div>
+          </div>
+          {% endfor %}
+        {% else %}
+          <div class="content-item">
+              <div class="title" style="text-align: center;">虚位以待</div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- {% for text in text_list %}
+    <div class="text">{{ text }}</div>
+    {% endfor %} -->
+  </div>
+</body>

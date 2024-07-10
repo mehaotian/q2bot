@@ -12,9 +12,12 @@ steam_id = "76561199055955400"
 # # owned_games = owned_games_response.json().get('response').get('games')
 
 
+# http://api.steampowered.com/IPlayerService/GetOwnedGames/v0001/?key=CFBCDCA9ACBFDDACD0321DB2BA4BDBCB&steamid=76561199201861987&format=json
+
 # # 获取用户最近在玩的游戏
 # recent_games_response = httpx.get(f"http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key={steam_key}&steamid={steam_id}&format=json")
 # # recent_games = recent_games_response.json().get('response').get('games')
+# http://api.steampowered.com/IPlayerService/GetRecentlyPlayedGames/v0001/?key=CFBCDCA9ACBFDDACD0321DB2BA4BDBCB&steamid=76561199201861987&format=json
 
 # print(recent_games_response.json())
 # data = recent_games_response.json()
@@ -27,6 +30,7 @@ steam_id = "76561199055955400"
 
 # 获取用户资料
 # response = httpx.get(f"http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key={steam_key}&steamids={steam_id}")
+# http://api.steampowered.com/ISteamUser/GetPlayerSummaries/v0002/?key=CFBCDCA9ACBFDDACD0321DB2BA4BDBCB&steamids=76561198178723369
 
 # data = response.json()
 
@@ -109,7 +113,7 @@ app_id = 250820  # SteamVR
 # print(code)
 
 api = WebAPI(steam_key)
-steam_id = SteamID(969025929)
+steam_id = SteamID(1585510901)
 
 # 获取用户信息
 # jsonData = api.call('ISteamUser.GetPlayerSummaries', steamids=steam_id)
@@ -126,11 +130,11 @@ steam_id = SteamID(969025929)
 # print('获取用户最新游戏：', jsonData)
 
 #获取特定游戏的成就
-jsonData = api.call('ISteamUserStats.GetPlayerAchievements', steamid=steam_id, appid=251570)
+# jsonData = api.call('ISteamUserStats.GetPlayerAchievements', steamid=steam_id, appid=251570)
 
-print('获取特定游戏的成就：', jsonData)
-with open('GetPlayerAchievements.json', 'w',encoding='utf-8') as f:
-    f.write(str(jsonData))
+# print('获取特定游戏的成就：', jsonData)
+# with open('GetPlayerAchievements.json', 'w',encoding='utf-8') as f:
+#     f.write(str(jsonData))
 
 
 # 获取特定游戏的统计书籍
@@ -146,11 +150,11 @@ with open('GetPlayerAchievements.json', 'w',encoding='utf-8') as f:
 
 
 # 获取游戏详情
-# https://store.steampowered.com/api/appdetails/?appids=
-appid = 251570
-url = f"https://store.steampowered.com/api/appdetails/?appids={appid}"
-header = {
-    "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
-}
-response = httpx.get(url,headers=header)
-print(response.json())
+# https://store.steampowered.com/api/appdetails/?appids=251570
+# appid = 251570
+# url = f"https://store.steampowered.com/api/appdetails/?appids={appid}"
+# header = {
+#     "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3"
+# }
+# response = httpx.get(url,headers=header)
+# print(response.json())

@@ -157,8 +157,10 @@ async def handle_is_supplement(user_id, group_id, sender):
         return use_gold, f'你需要补签{days}天，消耗金币{use_gold}个（共 {gold}个），回复【1】补签，回复【2】取消补签。'
 
 
-# 补签
 async def set_supplement(user_id, group_id, use_gold):
+    """
+    补签
+    """
     sender_user, _ = await UserTable.get_or_create(
         user_id=user_id,
         group_id=group_id,
@@ -253,6 +255,17 @@ async def handle_query(user_id: int, group_id: int, sender) -> Message:
 
     return ''
 
+async def get_users2signin(group_id: int):
+    """
+    获取签到用户的排行版数据
+    """
+    # 获取签到用户的排行版数据,获取前30个数据
+    users = await UserTable.filter(group_id=group_id).order_by('-sign_count').limit(30).all()
+    # users = await UserTable.filter(group_id=group_id).order_by('-sign_count').all()
+
+    users_dict_list = [{"nickname": user.nickname, "avatar": user.avatar, "sign_count": user.sign_count} for user in users]
+    # print('users', users)
+    return users_dict_list
 
 async def change_s_title(bot: Bot, gid: int, uid: int, title: Optional[str]):
     """

@@ -78,9 +78,3 @@ async def steam_handle(bot: Bot, event: GroupMessageEvent):
         msg = await bind_steam_user(group_id=gid, user_id=uid, sender=sender, steamid=steamid)
 
         await bot.send(event=event, message=msg)
-
-    print(params)
-    # s_title = msg.replace(' ', '').replace('头衔', '', 1)
-    # sb = At(event.json())
-    # gid = event.group_id
-    # uid = event.user_id

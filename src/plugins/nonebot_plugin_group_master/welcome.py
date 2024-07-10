@@ -7,8 +7,18 @@
 # @description: 群签到相关
 # @Software: VS Code
 
-
-from nonebot import on_fullmatch, on_command, on
+from .utils import check_func_status
+from .serivce.user_source import (
+    create_user,
+    handle_is_supplement,
+    handle_sign_in,
+    handle_change_bg,
+    set_supplement,
+    get_users2signin
+)
+from nonebot.log import logger
+from nonebot.typing import T_State
+from nonebot.adapters import MessageTemplate
 from nonebot.adapters.onebot.v11 import (
     Bot,
     Event,
@@ -16,18 +26,18 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
     MessageSegment
 )
-from nonebot.adapters import MessageTemplate
-from nonebot.typing import T_State
-
-from nonebot.log import logger
-from .serivce.user_source import (
-    create_user,
-    handle_is_supplement,
-    handle_sign_in,
-    handle_change_bg,
-    set_supplement
+from nonebot import on_fullmatch, on_command, on
+import io
+from PIL import Image
+from nonebot_plugin_htmlrender import (
+    template_to_pic,
 )
-from .utils import check_func_status
+from nonebot import require
+require("nonebot_plugin_htmlrender")
+# 注意顺序，先require再 from ... import ...
+# 注意顺序，先require再 from ... import ...
+# 注意顺序，先require再 from ... import ...
+
 
 # 指令集
 commands = {
@@ -43,6 +53,9 @@ replace_bg = on_command(commands["sign_in_bg"], priority=5, block=False)
 # 补签
 supplement = on_fullmatch(
     commands["sign_in_supplement"], priority=5, block=False)
+# 签到排行榜
+sign_list = on_command("签到排行榜")
+
 
 
 @sign.handle()
@@ -56,11 +69,10 @@ async def sign_in(bot: Bot, event: GroupMessageEvent):
     # 检查是否开启签到功能
     if not await check_func_status('签到', group_id):
         return await sign.finish('签到功能未开启')
-    
+
     logger.debug(f"群 group_id: 用户 {user_id} 签到")
     msg = await handle_sign_in(user_id, group_id, event.sender)
     await bot.send(event=event, message=msg)
-
 
 
 @replace_bg.handle()
@@ -81,7 +93,6 @@ async def _(bot: Bot, state: T_State, event: GroupMessageEvent):
     state['reply_msg'] = Message(f'{at} 请发送一张图片替换签到背景，图片尽量清晰一些。')
 
     await create_user(user_id, group_id, event.sender)
-    
 
 
 @replace_bg.got("bg", prompt=MessageTemplate('{reply_msg}'))
@@ -140,7 +151,6 @@ async def supplement_sign_in(bot: Bot, state: T_State, event: GroupMessageEvent)
     state['group_id'] = group_id
     state['use_gold'] = is_ok
     state['reply_msg'] = at + Message(msg)
-    
 
 
 @supplement.got("date", prompt=MessageTemplate("{reply_msg}"))
@@ -161,3 +171,45 @@ async def _(bot: Bot, state: T_State, event: Event):
         await supplement.finish(msg, at_sender=True)
     else:
         await supplement.finish('输入错误，已取消补签', at_sender=True)
+
+@sign_list.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    from pathlib import Path
+    gid = str(event.group_id)
+    users = await get_users2signin(group_id=gid)
+    # 将前三和后面的用户分开
+    users = users[:3], users[3:]
+    before_users, after_users = users
+
+    # 尝试安全地从 after_users 获取前三个用户，如果不存在则为 None
+    user1 = before_users[0] if len(before_users) > 0 else None
+    user2 = before_users[1] if len(before_users) > 1 else None
+    user3 = before_users[2] if len(before_users) > 2 else None
+ 
+    template_path = Path(__file__).parent / "templates"
+    template_name = "text.html"
+    # css_path = template_path / "mystyle.css"
+    # 设置模板
+    # 模板中本地资源地址需要相对于 base_url 或使用绝对路径
+    # 头部高 400 20内边距
+    pic = await template_to_pic(
+        template_path=str(template_path),
+        template_name=template_name,
+        templates={
+            "user1": user1,
+            "user2": user2,
+            "user3": user3,
+            "after_users": after_users,
+        },
+        pages={
+            "viewport": {"width": 600, "height": 420},
+            "base_url": f"file://{str(template_path)}",
+        },
+        wait=2,
+    )
+
+    a = Image.open(io.BytesIO(pic))
+    img_byte = io.BytesIO()
+    a.save(img_byte, format="PNG")
+
+    await sign_list.finish(MessageSegment.image(pic))

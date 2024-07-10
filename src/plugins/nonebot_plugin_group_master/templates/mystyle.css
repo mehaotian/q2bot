@@ -1,0 +1,188 @@
+body {
+  background-color: #6f65ec;
+  padding: 20px;
+  margin: 0;
+  line-height: 1.5;
+  font-size: 24px;
+}
+
+/* .main-box {
+} */
+
+.header {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  width: 100%;
+  height: 400px;
+}
+
+.header-title {
+  font-size: 50px;
+  font-family: 'Teko', sans-serif;
+  color: #fff;
+  font-weight: bold;
+  text-align: center;
+  margin-top: 15px;
+}
+
+.header-box {
+  /* height: 230px; */
+  display: flex;
+  background-color: #5b75fe;
+  border-radius: 15px;
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  /* border: 1px #37113a solid; */
+  /* box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.1); */
+}
+
+.header-item {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  padding: 15px;
+  overflow: hidden;
+  /* height: 230px; */
+  /* background-color: #fff; */
+}
+
+.avator {
+  position: relative;
+  width: 105px;
+  height: 105px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin: 0 auto;
+  margin-top: 45px;
+  border: 1px #fff solid;
+  background-color: #eee;
+}
+.no1 {
+  width: 180px;
+  flex-shrink: 0;
+  position: relative;
+  margin-top: -40px;
+  box-shadow: 0px -6px 5px 0px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  /* border: 1px red solid; */
+  background-color: #5b75fe;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  border: 1px #37113a solid;
+  /* border-bottom: none; */
+}
+.no2 {
+  margin-top: -20px;
+  background-color: #5b75fe;
+  border: 1px #37113a solid;
+  border-right: none;
+}
+.no3 {
+  border: 1px #37113a solid;
+  border-left: none;
+}
+
+.nickname{
+  margin-top: 10px;
+  font-size: 24px;
+  color: #fff;
+  /* 文字溢出隐藏 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  width: 100%;
+  text-align: center;
+}
+.sign-day {
+  font-size: 22px;
+  /* margin-top: 5px; */
+  color: #fff;
+}
+
+.no1 .avator {
+  width: 120px;
+  height: 120px;
+  /* margin-top: 20px; */
+  border: 4px #fcdf19 solid;
+}
+
+
+.no1 .nickname {
+  font-size: 26px;
+  font-weight: bold;
+}
+
+.no2 .avator {
+  border: 4px #cdcdcd solid;
+}
+
+.no3 .avator {
+  width: 90px;
+  height: 90px;
+  margin-top: 45px;
+  border: 4px #faaa2f solid;
+}
+
+.avator .icon {
+  position: absolute;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  top: -54px;
+  width:75px;
+  height:75px;
+}
+
+.avator .avatar-img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+}
+
+.content {
+  border: 1px #37113a solid;
+  border-top: 5px #fff solid;
+  /* min-height: 200px; */
+  width: 100%;
+  padding: 20px;
+  background-color: #5b75fe;
+  box-sizing: border-box;
+  margin-top: 20px;
+  box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.1);
+}
+.top-seat {
+  height: 5px;
+  width: 100%;
+  background-color: #fff;
+}
+.content-box {
+  border: 1px #37113a solid;
+  background-color: #fff;
+  /* height: 100%; */
+  box-sizing: border-box;
+  padding: 20px 25px;
+}
+
+.content-item {
+  display: flex;
+  font-size: 28px;
+  color: #3d48de;
+  line-height: 2;
+}
+.index {
+  width: 100px;
+}
+.title {
+  width: 100%;
+  /* 文字溢出隐藏 */
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.day {
+  width: 130px;
+  text-align: right;
+}
