@@ -39,6 +39,9 @@ COPY . /app/
 # Update system and install locales package
 RUN apt-get clean && apt-get update && apt-get install -y locales
 
+# 安装 chromium-browser 和 xdg-utils
+RUN apt-get update && apt-get install -y chromium-browser xdg-utils
+
 # Uncomment 'zh_CN.UTF-8' locale for generation
 RUN sed -i -e 's/# zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen && \
     locale-gen
