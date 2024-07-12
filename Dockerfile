@@ -40,7 +40,10 @@ COPY . /app/
 RUN apt-get clean && apt-get update && apt-get install -y locales
 
 # 安装 chromium-browser 和 xdg-utils
-RUN apt-get update && apt-get install -y chromium-browser xdg-utils
+# 分开运行命令，添加错误处理和清理缓存
+RUN apt-get update -qq && \
+    apt-get install -y --no-install-recommends chromium-browser xdg-utils && \
+    rm -rf /var/lib/apt/lists/*
 
 # Uncomment 'zh_CN.UTF-8' locale for generation
 RUN sed -i -e 's/# zh_CN.UTF-8 UTF-8/zh_CN.UTF-8 UTF-8/' /etc/locale.gen && \
