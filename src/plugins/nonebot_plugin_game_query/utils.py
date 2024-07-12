@@ -3,7 +3,8 @@ from .config import *
 
 # 小黑盒爬虫
 def hey_box(page: int):
-    url = f"https://api.xiaoheihe.cn/game/web/all_recommend/games/?os_type=web&version=999.0.0&show_type=discount&limit=30&offset={str((page - 1) * 30)}"
+    # {str((page - 1) * 30)}
+    url = f"https://api.xiaoheihe.cn/game/web/all_recommend/games/?os_type=web&version=999.0.0&show_type=discount&limit=30&offset="
     json_page = json.loads(other_request(url, headers=header).text)
     result_list = json_page["result"]["list"]
     result = []
