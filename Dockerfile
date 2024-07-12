@@ -48,7 +48,7 @@ RUN pip install --no-cache-dir gunicorn uvicorn[standard] nonebot2 \
   && pip install --no-cache-dir --no-index --force-reinstall --find-links=/wheel -r /wheel/requirements.txt && rm -rf /wheel
 
 # 复制当前目录下的所有文件到 /app/ ，外接挂载的文件会覆盖这些文件，所以不执行这一步
-# COPY . /app/
+COPY . /app/
 
 # 清理 apt 缓存，更新系统，安装 locales 包
 RUN apt-get clean && apt-get update && apt-get install -y locales
