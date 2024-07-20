@@ -19,6 +19,9 @@ RUN python -m pip wheel --wheel-dir=/wheel --no-cache-dir --requirement ./requir
 # 使用 pipx 在隔离环境中运行 nb-cli，生成或配置 /tmp/bot.py 文件。禁用缓存确保使用最新版本的 nb-cli。
 RUN python -m pipx run --no-cache nb-cli generate -f /tmp/bot.py
 
+# 在这个阶段安装 Playwright 和 Chromium
+RUN pip install playwright
+RUN playwright install chromium --with-deps
 
 # 设置基础镜像为 python:3.10-slim
 FROM python:3.10-slim
