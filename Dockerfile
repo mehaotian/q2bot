@@ -19,10 +19,6 @@ RUN python -m pip wheel --wheel-dir=/wheel --no-cache-dir --requirement ./requir
 # 使用 pipx 在隔离环境中运行 nb-cli，生成或配置 /tmp/bot.py 文件。禁用缓存确保使用最新版本的 nb-cli。
 RUN python -m pipx run --no-cache nb-cli generate -f /tmp/bot.py
 
-# 在这个阶段安装 Playwright 和 Chromium
-RUN pip install playwright
-RUN playwright install chromium --with-deps
-
 # 设置基础镜像为 python:3.10-slim
 FROM python:3.10-slim
 
@@ -40,6 +36,10 @@ RUN chmod +x /start.sh
 # 设置环境变量 APP_MODULE 为 _main:app 和 MAX_WORKERS 为 1
 ENV APP_MODULE _main:app
 ENV MAX_WORKERS 1
+
+# 在这个阶段安装 Playwright 和 Chromium
+RUN pip install playwright
+RUN playwright install chromium --with-deps
 
 # 从 requirements_stage 阶段复制 /tmp/bot.py 和 /wheel 目录到 /app
 COPY --from=requirements_stage /tmp/bot.py /app
