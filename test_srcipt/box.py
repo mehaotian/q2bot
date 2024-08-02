@@ -126,3 +126,6 @@ def get_article_list(page: int = 1):
         result.append(gameinfo)
 
     return result
+
+
+# curl -X GET 'https://api.xiaoheihe.cn/bbs/app/link/tree?h_src=YmJzX2FwcF9mZWVkc19fZmxvd19wb29sX2ZvcmNlX2luc2VydF9zcmNfXzBfX2xpbmtfaWRfXzEyOTI4ODI3OV9fYXBwX2ZlZWRzX2V4cG9zdXJlX2NvdW50X183OTQ3X19yZXF1ZXN0X2lkX18wdUFjTUZ5alpPeVloWFlZMHhVRGVDVWlBSjhZYmhWNV9fcmVjYWxsX18xMF9fYWxfX1JFQzAwMV9fdHlwZV92Ml9fMl9fZmxvd190aWNrZXRfaWRfXzA%3D&link_id=129288279&page=1&limit=30&is_first=1&owner_only=0&hide_cy=0&index=0&heybox_id=36331242&imei=58dcf9f48bba35a9&device_info=M2104K10AC&nonce=gZXtM9MIqWUpBlOXJdK3rzo2BBkclODj&hkey=1BA54A0D&os_type=Android&x_os_type=Android&x_client_type=mobile&os_version=12&version=1.3.312&build=824&_time=1722251270&dw=393&channel=heybox_google&x_app=heybox' -H 'User-Agent: Mozilla/5.0 AppleWebKit/537.36 (KHTML, like Gecko) Chrome/41.0.2272.118 Safari/537.36 ApiMaxJia/1.0' -H 'Accept-Encoding: gzip' -H 'referer: http://api.maxjia.com/' -H 'Cookie: pkey=0MmRjcnRwZXO3kWoP3a/nv4l3iF8gJjbUY3+14/VspbnHI6N3o7ugbrAJIwe1RZ6vW7mrTlSkngH+QfBj953Diw=='
