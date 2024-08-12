@@ -233,10 +233,6 @@ async def update_nickname_handle(bot: Bot, event: GroupMessageEvent):
 @run_say.handle()
 async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     gid = str(event.group_id)
-
-    if not await check_func_status('逼话榜', gid):
-        return
-
     # 是否回复
     rp = Reply(event.json())
     # 获取经验
@@ -244,6 +240,15 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     # 获取用户消息
     message = event.get_message()
     msgdata = message.extract_plain_text().strip()
+
+    if "女装" in msgdata:
+        print('消息被撤回')
+        # 撤回消息 ，如果消息中出现 女装 ，则撤回消息
+        await bot.delete_msg(message_id=event.message_id)
+        return
+
+    if not await check_func_status('逼话榜', gid):
+        return
 
     imagesCount = 0
     facesCount = 0
