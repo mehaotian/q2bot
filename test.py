@@ -65,31 +65,44 @@ import random
 #     print("绑定成功！")
 # else:
 #     print("绑定失败，请提高魅力值或使用道具。")
-user_list = ['大鹅', '老虚', '城管']
-join_number = 3
-participants = user_list[:join_number]
+# user_list = ['大鹅', '老虚', '城管']
+# join_number = 3
+# participants = user_list[:join_number]
 
-# 创建一个列表，包含所有参与者
-lottery_pool = list(participants)
-
-
-# 执行一百次 ，并统计 每个人中奖的次数
-def choice(count = 100):
-    result = {}
-    for i in range(count):
-        # 随机选择一个参与者
-        winner = random.choice(lottery_pool)
-        # 将中奖者加入结果字典，并记录中奖次数
-        if winner in result:
-            result[winner] += 1
-        else:
-            result[winner] = 1
-
-    return result
+# # 创建一个列表，包含所有参与者
+# lottery_pool = list(participants)
 
 
-print('第一次随机 100 次',choice())
-print('第二次随机 1000 次',choice(1000))
-print('第三次随机 10000 次',choice(10000))
-print('第四次随机 100000 次',choice(100000))
-print('第五次随机 1000000 次',choice(1000000))
+# # 执行一百次 ，并统计 每个人中奖的次数
+# def choice(count = 100):
+#     result = {}
+#     for i in range(count):
+#         # 随机选择一个参与者
+#         winner = random.choice(lottery_pool)
+#         # 将中奖者加入结果字典，并记录中奖次数
+#         if winner in result:
+#             result[winner] += 1
+#         else:
+#             result[winner] = 1
+
+#     return result
+
+
+# print('第一次随机 100 次',choice())
+# print('第二次随机 1000 次',choice(1000))
+# print('第三次随机 10000 次',choice(10000))
+# print('第四次随机 100000 次',choice(100000))
+# print('第五次随机 1000000 次',choice(1000000))
+
+# 初始化一个字典来记录每个数字出现的次数
+count_dict = {i: 0 for i in range(1, 101)}
+
+# 随机生成 100 次 1 到 100 之间的数字，并记录每个数字出现的次数
+for _ in range(100):
+    num = random.randint(1, 100)
+    count_dict[num] += 1
+
+# 打印每个数字出现的次数
+for num, count in count_dict.items():
+    if count > 0:
+        print(f"数字 {num} 出现了 {count} 次")

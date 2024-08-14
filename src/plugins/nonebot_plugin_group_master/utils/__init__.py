@@ -1,5 +1,6 @@
 
 import json
+import re
 from typing import Optional, Union
 import httpx
 import os
@@ -28,11 +29,15 @@ group_cache_directory = cache_directory / '群功能开关配置'
 os.makedirs(group_cache_directory, exist_ok=True)
 switcher_path = group_cache_directory / '开关配置.json'
 
+
+words_blacklist_directory = cache_directory / '禁用词'
+os.makedirs(words_blacklist_directory, exist_ok=True)
+words_blacklist_path = words_blacklist_directory / '禁用词配置.json'
+
 async def init():
     """
     初始化
     """
-
     if not switcher_path.exists():
         bots = nonebot.get_bots()
         for bot in bots.values():
@@ -114,6 +119,119 @@ async def switcher_handle(gid, cmd, user_input_func_name):
                 await cmd.send('已开启' + user_input_func_name)
 
 
+async def words_blacklist_init():
+    """
+    禁用词名单初始化
+    """
+    if not words_blacklist_path.exists():
+        bots = nonebot.get_bots()
+        for bot in bots.values():
+            logger.info('创建禁用词配置文件,分群设置,默认为空')
+            g_list = (await bot.get_group_list())
+            words_blacklist_dict = {}
+            for group in g_list:
+                words_blacklist_dict.update({str(group['group_id']): []})
+            with open(words_blacklist_path, 'w', encoding='utf-8') as wbp:
+                wbp.write(f"{json.dumps(words_blacklist_dict,ensure_ascii=False,indent=4)}")
+    else:
+        print('禁用词配置文件已存在')
+
+async def get_words_backlist(gid: str) -> list:
+    """
+    获取禁用词列表
+    :param gid: 群号
+    :return: list
+    """
+    words_blacklist = json_load(words_blacklist_path)
+    if words_blacklist is None:
+        raise FileNotFoundError(words_blacklist_path)
+    try:
+        return words_blacklist[gid]
+    except KeyError:  # 新加入的群
+        logger.info(
+            f"本群({gid})尚未初始化！将自动初始化：禁用词列表为空。\n\n请重新发送指令继续之前的操作")
+        bots = nonebot.get_bots()
+        for bot in bots.values():
+            await words_blacklist_init()
+        return []
+    
+async def words_blacklist_handle(gid, cmd, user_input_func_name):
+    """
+    保存禁用关键词
+    """
+    words_blacklist = json_load(words_blacklist_path)
+    now_words_blacklist = words_blacklist[gid]
+    # 如果存在重复的关键词
+    if user_input_func_name[0] in now_words_blacklist:
+        await cmd.send('已存在该禁用关键词',at_sender=True)
+        return
+    text = ''
+    # 添加全部关键词
+    for item in user_input_func_name:
+        # 如果包含 &amp; 则转换为 &
+        if '&amp;' in item:
+            item = item.replace('&amp;', '&')
+       
+        now_words_blacklist.append(item)
+        text += item + ' '
+    words_blacklist[gid] = now_words_blacklist
+    json_upload(words_blacklist_path, words_blacklist)
+    await cmd.send('已添加:' + text,at_sender=True)
+
+
+def string_to_regex(pattern: str) -> str:
+    """
+    将字符串转换为正则表达式
+    """
+    # 转义正则表达式中的特殊字符
+    pattern = re.escape(pattern)
+    # 将 & 转换为 .*
+    pattern = pattern.replace(r'\&', '.*')
+    # 将 | 转换为 |
+    pattern = pattern.replace(r'\|', '|')
+    # 奖 \( 转换为 (
+    pattern = pattern.replace(r'\(', '(')
+    # 将 \) 转换为 )
+    pattern = pattern.replace(r'\)', ')')
+    return pattern
+
+async def check_message_legality(gid, cmd,msg) -> bool:
+    """
+    检查消息是否合法
+    """
+    words_blacklist_handle = await get_words_backlist(str(gid))
+    print('禁用列表：',words_blacklist_handle)
+    for pattern in words_blacklist_handle:
+        pattern = string_to_regex(pattern)
+        print('正则表达式：',pattern)
+        if re.search(pattern, msg):
+            return False
+    return True
+
+async def delete_words_blacklist(gid, cmd, user_input_func_name):
+    """
+    删除禁用关键词
+    """
+    words_blacklist = json_load(words_blacklist_path)
+    now_words_blacklist = words_blacklist[gid]
+    text = ''
+    for item in user_input_func_name:
+        # 如果包含 &amp; 则转换为 &
+        if '&amp;' in item:
+            item = item.replace('&amp;', '&')
+
+        print('删除的关键词：',item)
+        if item in now_words_blacklist:
+            now_words_blacklist.remove(item)
+            text += item + ' '
+        
+    if text == '':
+        await cmd.send('不存在该禁用关键词',at_sender=True)
+        return
+    words_blacklist[gid] = now_words_blacklist
+    json_upload(words_blacklist_path, words_blacklist)
+    await cmd.send('已删除:' + text,at_sender=True)
+        
 def json_load(path) -> Optional[dict]:
     """
     加载json文件

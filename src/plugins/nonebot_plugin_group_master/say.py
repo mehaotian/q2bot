@@ -23,6 +23,8 @@ from nonebot.adapters.onebot.v11 import (
     NoticeEvent,
     ActionFailed,
 )
+from nonebot.internal.matcher import Matcher
+
 from nonebot.adapters.onebot.v11.permission import GROUP_ADMIN, GROUP_OWNER
 from nonebot.permission import SUPERUSER
 
@@ -30,8 +32,7 @@ from nonebot.rule import to_me
 from nonebot.typing import T_State
 from nonebot.log import logger
 from nonebot import require
-from .utils import MsgText, Reply,check_func_status
-
+from .utils import MsgText, Reply, check_func_status, check_message_legality
 
 
 try:
@@ -57,7 +58,6 @@ query_me_reg = r"^(今日|昨天|前天|本周|上周|本月|上月|今年|去�
 query_me = on_regex(query_me_reg, priority=1, block=False)
 
 
-
 # 逼话限定抽奖
 bihua_kaijiang = on_command("逼话开奖", rule=to_me(
 ), permission=SUPERUSER | GROUP_ADMIN | GROUP_OWNER, priority=9, block=True)
@@ -69,6 +69,7 @@ today_active = on_regex("^今日活跃$", permission=SUPERUSER |
 
 # 更新用户昵称
 update_nickname = on_fullmatch("更新", priority=1, block=False)
+
 
 @say.handle()
 async def say_handle(bot: Bot, event: GroupMessageEvent):
@@ -131,7 +132,7 @@ async def bihua_kaijiang_handle(bot: Bot, event: GroupMessageEvent):
             await bot.send(event, f"{time}逼话抽奖资格查询中,保底为： {textCount}，请稍后...")
 
             msg, data = await get_lottery_month(group_id=group_id, textCount=textCount, time=time)
-            
+
             return await bot.send(event=event, message=msg)
 
         if not command.isdigit():
@@ -188,7 +189,6 @@ async def today_active_handle(bot: Bot, event: GroupMessageEvent):
     # 获取群组ID
     group_id = str(event.group_id)
 
-
     if not await check_func_status('逼话榜', group_id):
         return await today_active.finish('逼话功能未开启')
 
@@ -230,9 +230,14 @@ async def update_nickname_handle(bot: Bot, event: GroupMessageEvent):
         await bot.send(event=event, message=Message(msg + MessageSegment.text(" 数据更新失败！")))
 
 
+
+# 创建一个字典来记录每个用户的消息撤回次数
+user_revoke_count = {}
+
 @run_say.handle()
-async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
+async def saying_handle(bot: Bot,  matcher: Matcher, event: GroupMessageEvent, state: T_State):
     gid = str(event.group_id)
+    uid = str(event.user_id)
     # 是否回复
     rp = Reply(event.json())
     # 获取经验
@@ -241,10 +246,28 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
     message = event.get_message()
     msgdata = message.extract_plain_text().strip()
 
-    if "女装" in msgdata:
+    is_words_ok = await check_message_legality(gid=gid, cmd=matcher, msg=msgdata)
+
+    if not is_words_ok:
         print('消息被撤回')
-        # 撤回消息 ，如果消息中出现 女装 ，则撤回消息
+        # 撤回消息 ，如果消息中出现黑名单中的关键词，则撤回消息
         await bot.delete_msg(message_id=event.message_id)
+
+        # 更新用户的消息撤回次数
+        if uid not in user_revoke_count:
+            user_revoke_count[uid] = 0
+        user_revoke_count[uid] += 1
+
+        # 如果用户的消息撤回次数达到三次，则禁言一分钟
+        if user_revoke_count[uid] >= 3:
+            try:
+                await bot.set_group_ban(group_id=event.group_id, user_id=event.user_id, duration=60)
+                print(f"用户 {uid} 被禁言一分钟")
+                # 重置用户的消息撤回次数
+                user_revoke_count[uid] = 0
+                await bot.send(event=event, message=f"您因为发送违规消息超过3次，已被禁言一分钟", at_sender=True)
+            except ActionFailed as e:
+                print(f"禁言失败: {e}")
         return
 
     if not await check_func_status('逼话榜', gid):
@@ -292,7 +315,8 @@ async def saying_handle(bot: Bot, event: GroupMessageEvent, state: T_State):
 
     if textCount > 100:
         msg = MessageSegment.reply(event.message_id) + \
-            MessageSegment.text(f"当前内容疑似恶意刷屏，不计入逼话！如果是故意刷屏，将取消所有逼话抽奖资格，正常聊天则不受影响。")
+            MessageSegment.text(
+                f"当前内容疑似恶意刷屏，不计入逼话！如果是故意刷屏，将取消所有逼话抽奖资格，正常聊天则不受影响。")
         return await bot.send(event=event, message=msg)
 
     await save_user_say(user_id, group_id, sender, data)
