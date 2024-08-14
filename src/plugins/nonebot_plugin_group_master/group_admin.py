@@ -26,6 +26,9 @@ words_disable = on_command('禁', priority=1, block=True,
 words_delete = on_command('删', priority=10, block=True,
                             permission=SUPERUSER | GROUP_ADMIN | GROUP_OWNER)
 
+update = on_command('更新配置', priority=1, block=True,
+                            permission=SUPERUSER | GROUP_ADMIN | GROUP_OWNER)
+
 # 查询关键字
 words_query = on_command('禁用词', priority=1, block=True)
 # test = on_command('test', priority=1, block=True)
@@ -38,6 +41,11 @@ async def _(bot: nonebot.adapters.Bot):
     # 初始化禁用词
     await words_blacklist_init()
 
+@update.handle()
+async def _(bot: Bot, event: GroupMessageEvent):
+    # 初始化禁用词
+    await words_blacklist_init()
+    await update.finish('更新成功')
 
 @switcher.handle()
 async def _(bot: Bot, matcher: Matcher, event: GroupMessageEvent, args: Message = CommandArg()):

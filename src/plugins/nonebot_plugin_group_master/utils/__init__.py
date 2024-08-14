@@ -135,6 +135,15 @@ async def words_blacklist_init():
                 wbp.write(f"{json.dumps(words_blacklist_dict,ensure_ascii=False,indent=4)}")
     else:
         print('禁用词配置文件已存在')
+        bots = nonebot.get_bots()
+        for bot in bots.values():
+            g_list = (await bot.get_group_list())
+            words_blacklist_dict = json_load(words_blacklist_path)
+            for group in g_list:
+                gid = str(group['group_id'])
+                if not words_blacklist_dict.get(gid):
+                    words_blacklist_dict[gid] = []
+            json_upload(words_blacklist_path, words_blacklist_dict)
 
 async def get_words_backlist(gid: str) -> list:
     """
@@ -160,7 +169,14 @@ async def words_blacklist_handle(gid, cmd, user_input_func_name):
     保存禁用关键词
     """
     words_blacklist = json_load(words_blacklist_path)
+
+    # 检查群组 ID 是否在字典中
+    if gid not in words_blacklist:
+        words_blacklist[gid] = []  # 如果不存在，则初始化为空列表
+    
     now_words_blacklist = words_blacklist[gid]
+
+
     # 如果存在重复的关键词
     if user_input_func_name[0] in now_words_blacklist:
         await cmd.send('已存在该禁用关键词',at_sender=True)
