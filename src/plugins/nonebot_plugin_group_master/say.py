@@ -44,7 +44,7 @@ from .serivce.say_source import get_say_list, save_user_say, get_user_say, get_s
 from .models.user_model import UserTable
 
 # 监听用户消息
-run_say = on_message(priority=0, block=False)
+run_say = on_message(priority=1, block=False)
 
 # 消息撤回
 recall_run = on_notice(priority=1, block=False)
@@ -234,6 +234,12 @@ async def update_nickname_handle(bot: Bot, event: GroupMessageEvent):
 # 创建一个字典来记录每个用户的消息撤回次数
 user_revoke_count = {}
 
+# 打断+1
+interrupt = {
+    "words":'',
+    "count":0
+}
+
 @run_say.handle()
 async def saying_handle(bot: Bot,  matcher: Matcher, event: GroupMessageEvent, state: T_State):
     gid = str(event.group_id)
@@ -269,6 +275,15 @@ async def saying_handle(bot: Bot,  matcher: Matcher, event: GroupMessageEvent, s
             except ActionFailed as e:
                 print(f"禁言失败: {e}")
         return
+    
+    # 打断+1 
+    if msgdata == interrupt["words"]:
+        interrupt["count"] += 1
+        if interrupt["count"] >= 3:
+            await bot.send(event=event, message=MessageSegment.text(f"哎嗨，可恶的复读机，打断你～"))
+            interrupt["count"] = 0
+
+    interrupt["words"] = msgdata
 
     if not await check_func_status('逼话榜', gid):
         return

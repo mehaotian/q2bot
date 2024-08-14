@@ -32,6 +32,7 @@ async def steam_handle(bot: Bot, event: GroupMessageEvent):
     gid = str(event.group_id)
     uid = str(event.user_id)
     sender = event.sender
+    at_user = At(event.json())
 
     # 检查是否开启steam功能
     if not await check_func_status('steam', gid):
@@ -78,3 +79,17 @@ async def steam_handle(bot: Bot, event: GroupMessageEvent):
         msg = await bind_steam_user(group_id=gid, user_id=uid, sender=sender, steamid=steamid)
 
         await bot.send(event=event, message=msg)
+
+    if command == '查询':
+        if len(at_user) == 0:
+            msg = MessageSegment.at(uid) + " 请 @一个需要查询的群友"
+            return await bot.send(event=event, message=msg)
+        if len(at_user) > 1:
+            msg = MessageSegment.at(uid) + " 一次只能查询一个好友"
+            return await bot.send(event=event, message=msg)
+        user_id = at_user[0]
+        if user_id == 'all':
+            return await bot.send(event, "你有病啊，查完我不废了！！！")
+
+        msg = await query_steam_user(user_id=user_id)
+        return await bot.send(event=event, message=msg, at_sender=True)

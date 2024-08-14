@@ -37,9 +37,9 @@ RUN chmod +x /start.sh
 ENV APP_MODULE _main:app
 ENV MAX_WORKERS 1
 
-# 在这个阶段安装 Playwright 和 Chromium
-RUN pip install playwright
-RUN playwright install chromium --with-deps
+# 在这个阶段安装 Playwright 和 Chromium ,每次都安装，给他禁用了
+# RUN pip install playwright
+# RUN playwright install chromium --with-deps
 
 # 从 requirements_stage 阶段复制 /tmp/bot.py 和 /wheel 目录到 /app
 COPY --from=requirements_stage /tmp/bot.py /app
