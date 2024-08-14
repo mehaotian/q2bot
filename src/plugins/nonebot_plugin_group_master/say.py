@@ -280,7 +280,10 @@ async def saying_handle(bot: Bot,  matcher: Matcher, event: GroupMessageEvent, s
     if msgdata == interrupt["words"]:
         interrupt["count"] += 1
         if interrupt["count"] >= 3:
-            await bot.send(event=event, message=MessageSegment.text(f"哎嗨，可恶的复读机，打断你～"))
+            if msgdata == '哎嗨，可恶的复读机，打断你～':
+                await bot.send(event=event, message=MessageSegment.text(f"渣渣，卡我bug ？打断你～"))
+            else:
+                await bot.send(event=event, message=MessageSegment.text(f"哎嗨，可恶的复读机，打断你～"))
             interrupt["count"] = 0
 
     interrupt["words"] = msgdata
