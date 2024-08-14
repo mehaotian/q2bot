@@ -26,18 +26,16 @@ from nonebot.adapters.onebot.v11 import (
     GroupMessageEvent,
     MessageSegment
 )
-from nonebot import on_fullmatch, on_command, on
-import io
-from PIL import Image
-from nonebot_plugin_htmlrender import (
-    template_to_pic,
-)
-from nonebot import require
-require("nonebot_plugin_htmlrender")
+from nonebot import on_fullmatch, on_command
+# from PIL import Image
+# from nonebot_plugin_htmlrender import (
+#     template_to_pic,
+# )
+# from nonebot import require
+# require("nonebot_plugin_htmlrender")
 # 注意顺序，先require再 from ... import ...
 # 注意顺序，先require再 from ... import ...
 # 注意顺序，先require再 from ... import ...
-
 
 # 指令集
 commands = {
@@ -174,42 +172,43 @@ async def _(bot: Bot, state: T_State, event: Event):
 
 @sign_list.handle()
 async def _(bot: Bot, event: GroupMessageEvent):
-    from pathlib import Path
-    gid = str(event.group_id)
-    users = await get_users2signin(group_id=gid)
-    # 将前三和后面的用户分开
-    users = users[:3], users[3:]
-    before_users, after_users = users
+    # from pathlib import Path
+    # gid = str(event.group_id)
+    # users = await get_users2signin(group_id=gid)
+    # # 将前三和后面的用户分开
+    # users = users[:3], users[3:]
+    # before_users, after_users = users
 
-    # 尝试安全地从 after_users 获取前三个用户，如果不存在则为 None
-    user1 = before_users[0] if len(before_users) > 0 else None
-    user2 = before_users[1] if len(before_users) > 1 else None
-    user3 = before_users[2] if len(before_users) > 2 else None
+    # # 尝试安全地从 after_users 获取前三个用户，如果不存在则为 None
+    # user1 = before_users[0] if len(before_users) > 0 else None
+    # user2 = before_users[1] if len(before_users) > 1 else None
+    # user3 = before_users[2] if len(before_users) > 2 else None
  
-    template_path = Path(__file__).parent / "templates"
-    template_name = "text.html"
-    # css_path = template_path / "mystyle.css"
-    # 设置模板
-    # 模板中本地资源地址需要相对于 base_url 或使用绝对路径
-    # 头部高 400 20内边距
-    pic = await template_to_pic(
-        template_path=str(template_path),
-        template_name=template_name,
-        templates={
-            "user1": user1,
-            "user2": user2,
-            "user3": user3,
-            "after_users": after_users,
-        },
-        pages={
-            "viewport": {"width": 600, "height": 420},
-            "base_url": f"file://{str(template_path)}",
-        },
-        wait=2,
-    )
+    # template_path = Path(__file__).parent / "templates"
+    # template_name = "text.html"
+    # # css_path = template_path / "mystyle.css"
+    # # 设置模板
+    # # 模板中本地资源地址需要相对于 base_url 或使用绝对路径
+    # # 头部高 400 20内边距
+    # pic = await template_to_pic(
+    #     template_path=str(template_path),
+    #     template_name=template_name,
+    #     templates={
+    #         "user1": user1,
+    #         "user2": user2,
+    #         "user3": user3,
+    #         "after_users": after_users,
+    #     },
+    #     pages={
+    #         "viewport": {"width": 600, "height": 420},
+    #         "base_url": f"file://{str(template_path)}",
+    #     },
+    #     wait=2,
+    # )
 
-    a = Image.open(io.BytesIO(pic))
-    img_byte = io.BytesIO()
-    a.save(img_byte, format="PNG")
+    # a = Image.open(io.BytesIO(pic))
+    # img_byte = io.BytesIO()
+    # a.save(img_byte, format="PNG")
 
-    await sign_list.finish(MessageSegment.image(pic))
+    # await sign_list.finish(MessageSegment.image(pic))
+    pass

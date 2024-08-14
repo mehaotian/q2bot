@@ -216,10 +216,8 @@ async def check_message_legality(gid, cmd,msg) -> bool:
     检查消息是否合法
     """
     words_blacklist_handle = await get_words_backlist(str(gid))
-    print('禁用列表：',words_blacklist_handle)
     for pattern in words_blacklist_handle:
         pattern = string_to_regex(pattern)
-        print('正则表达式：',pattern)
         if re.search(pattern, msg):
             return False
     return True
