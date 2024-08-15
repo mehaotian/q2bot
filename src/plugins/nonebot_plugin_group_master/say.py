@@ -50,8 +50,12 @@ run_say = on_message(priority=1, block=False)
 recall_run = on_notice(priority=1, block=False)
 
 # 逼话排行榜
-say_reg = r"^(今日|昨天|前天|本周|上周|本月|上月|今年|去年|全部)逼话排行榜|^逼话排行榜$"
+say_reg = r"^(今日|昨天|前天|本周|上周|本月|上月)逼话排行榜|^逼话排行榜$"
 say = on_regex(say_reg, priority=1, block=False)
+
+say_year_reg = r"^(今年|去年|全部)逼话排行榜$"
+say_year = on_regex(say_year_reg, permission=SUPERUSER |
+                    GROUP_ADMIN | GROUP_OWNER, priority=9, block=True)
 
 # 查询自己指定时间逼话榜详情
 query_me_reg = r"^(今日|昨天|前天|本周|上周|本月|上月|今年|去年|全部)逼话$"
@@ -69,6 +73,23 @@ today_active = on_regex("^今日活跃$", permission=SUPERUSER |
 
 # 更新用户昵称
 update_nickname = on_fullmatch("更新", priority=1, block=False)
+
+
+@say_year.handle()
+async def say_year_handle(bot: Bot, event: GroupMessageEvent):
+    # 获取消息内容
+    text = event.message.extract_plain_text().strip()
+    # 获取群组ID
+    group_id = str(event.group_id)
+    # 获取匹配的月份或日期
+    match = re.match(say_year_reg, text)
+    logger.debug(f'match：{match}')
+    if match:
+        date = match.group(1)
+        await bot.send(event=event, message=f"{date}逼话排行榜正在准备中，请稍后...")
+
+        msg = await get_say_list(date_str=date, group_id=group_id)
+        await bot.send(event=event, message=msg)
 
 
 @say.handle()
@@ -230,15 +251,15 @@ async def update_nickname_handle(bot: Bot, event: GroupMessageEvent):
         await bot.send(event=event, message=Message(msg + MessageSegment.text(" 数据更新失败！")))
 
 
-
 # 创建一个字典来记录每个用户的消息撤回次数
 user_revoke_count = {}
 
 # 打断+1
 interrupt = {
-    "words":'',
-    "count":0
+    "words": '',
+    "count": 0
 }
+
 
 @run_say.handle()
 async def saying_handle(bot: Bot,  matcher: Matcher, event: GroupMessageEvent, state: T_State):
@@ -275,7 +296,7 @@ async def saying_handle(bot: Bot,  matcher: Matcher, event: GroupMessageEvent, s
             except ActionFailed as e:
                 print(f"禁言失败: {e}")
         return
-    # 打断+1 
+    # 打断+1
     if msgdata == interrupt["words"]:
         interrupt["count"] += 1
         if interrupt["count"] >= 5:
