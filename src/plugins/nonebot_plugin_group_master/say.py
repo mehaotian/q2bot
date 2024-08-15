@@ -275,16 +275,18 @@ async def saying_handle(bot: Bot,  matcher: Matcher, event: GroupMessageEvent, s
             except ActionFailed as e:
                 print(f"禁言失败: {e}")
         return
-    
     # 打断+1 
     if msgdata == interrupt["words"]:
         interrupt["count"] += 1
-        if interrupt["count"] >= 3:
+        if interrupt["count"] >= 5:
             if msgdata == '哎嗨，可恶的复读机，打断你～':
                 await bot.send(event=event, message=MessageSegment.text(f"渣渣，卡我bug ？打断你～"))
             else:
                 await bot.send(event=event, message=MessageSegment.text(f"哎嗨，可恶的复读机，打断你～"))
             interrupt["count"] = 0
+    else:
+        # 如果不是重复的话，则重置打断次数
+        interrupt["count"] = 0
 
     interrupt["words"] = msgdata
 

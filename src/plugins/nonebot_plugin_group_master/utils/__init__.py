@@ -430,6 +430,18 @@ def MsgText(data: str):
         return msg_text
     except:
         return ''
+def ImageType(data: str):
+    """
+    获取是否存在图片
+    """
+    try:
+        data = json.loads(data)
+        for msg in data['message']:
+            if msg['type'] == 'image':
+                return True
+        return False
+    except KeyError:
+        return False
     
 def Reply(data: str):
     """
