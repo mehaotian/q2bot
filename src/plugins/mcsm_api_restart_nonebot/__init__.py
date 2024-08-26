@@ -21,14 +21,14 @@ driver = get_driver()
 @driver.on_bot_connect
 async def _(bot: Bot):
     try:
-        with open("restart_info", "r", encoding="utf-8") as r:
-            target_id, bot_id = r.read().split()
+        # with open("restart_info", "r", encoding="utf-8") as r:
+        #     target_id, bot_id = r.read().split()
 
-        if bot.self_id != bot_id:
-            raise
-
+        # if bot.self_id != bot_id:
+        #     raise
+        target_id = '490272692'
         await sleep(1)
-        msg = "重启完成！"
+        msg = "报告！喵叽部署完毕！～"
         await bot.send_private_msg(user_id=int(target_id), message=msg)
         remove("restart_info")
     except:
