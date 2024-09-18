@@ -87,13 +87,21 @@ detial_text = "/bbs/app/api/share/data"
 
 # https://api.xiaoheihe.cn/bbs/web/profile/post/links?os_type=web&version=999.0.3&x_app=heybox_website&x_client_type=web&heybox_id=43580550&x_os_type=Mac&hkey=FDC9386&_time=1718355163&nonce=8957D56ECF6C4DA42220161FBF925778&userid=1985029&limit=20&offset=0&post_type=2&list_type=article
 # https://api.xiaoheihe.cn/bbs/app/api/share/data/?os_type=web&app=heybox&client_type=mobile&version=999.0.3&x_client_type=web&x_os_type=Mac&x_client_version=&x_app=heybox&heybox_id=-1&offset=0&limit=3&link_id=125369222&use_concept_type=&hkey=C2N4Q78&_time=1718355967&nonce=28BCBB38D225EA790D352A9CC3E8932A
-# https://api.xiaoheihe.cn/bbs/app/api/share/data/?os_type=web&app=heybox&client_type=mobile&version=999.0.3&x_client_type=web&x_os_type=Mac&x_client_version=&x_app=heybox&heybox_id=-1&offset=0&limit=3&link_id=125369222&use_concept_type=&hkey=OG9HQ86&_time=1718356744&nonce=9C5908337EA30ECB6F63E0FBA2BC03A8
 
-def r_url(page: int,user_id:int):
+# 获取文章评论
+# https://api.xiaoheihe.cn/bbs/app/link/tree?link_id=133798885&page=1&limit=100&sort_filter=hot&client_type=heybox_chat&x_client_type=web&os_type=web&x_os_type=Windows&device_info=Chrome&x_app=heybox_chat&version=999.0.3&web_version=1.0.0&chat_os_type=web&chat_version=1.24.4&chat_exe_version=&heybox_id=36331242&nonce=fb1da23e46ff7597356afaf788bdb5e2&_time=1726630912&hkey=KMF1D02&_chat_time=540590493&imei=58dcf9f48bba35a0&build=783
+
+def r_url(page: int,user_id:int,limit:int=20):
+    """
+    获取帖子详情，包含点击量 评论数等信息
+    """
     obj = D(text)
-    return f'https://api.xiaoheihe.cn/bbs/web/profile/post/links?os_type=web&version=999.0.3&x_app=heybox_website&x_client_type=web&heybox_id=43580550&x_os_type=Mac&hkey={obj["hkey"]}&_time={obj["_time"]}&nonce={obj["nonce"]}&userid={user_id}&limit=20&offset={str((page - 1) * 20)}&post_type=2&list_type=article'
+    return f'https://api.xiaoheihe.cn/bbs/web/profile/post/links?os_type=web&version=999.0.3&x_app=heybox_website&x_client_type=web&heybox_id=43580550&x_os_type=Mac&hkey={obj["hkey"]}&_time={obj["_time"]}&nonce={obj["nonce"]}&userid={user_id}&limit={limit}&offset={str((page - 1) * 20)}&post_type=2&list_type=article'
 
 def detail_ulr(linkid:int,page:int=1):
+    """
+    获取分享详情
+    """
     obj = D(detial_text)
     return f'https://api.xiaoheihe.cn/bbs/app/api/share/data/?os_type=web&app=heybox&client_type=mobile&version=999.0.3&x_client_type=web&x_os_type=Mac&x_client_version=&x_app=heybox&heybox_id=-1&offset={str((page - 1) * 20)}&limit=20&link_id={linkid}&use_concept_type=&hkey={obj["hkey"]}&_time={obj["_time"]}&nonce={obj["nonce"]}'
 
@@ -104,15 +112,15 @@ header = {
     "Referer": "https://www.xiaoheihe.cn/",
 }
 
-def get_article_list(page: int = 1):
+def get_article_list(page: int = 1,limit:int=20):
     # 1985029 小三
     # 26850094 清娜
     # 43580550 鹅
-    url = r_url(page=page, user_id=26850094)
+    url = r_url(page=page,limit=limit, user_id=26850094)
     # 125914096 125934489
     link_url = detail_ulr(125934489,page=1)
-    # print(url)
-    print(link_url)
+    print('url ---',url)
+    print('link_url ---', link_url)
 
     json_page = json.loads(other_request(url, headers=header).text)
     result_list = json_page["post_links"]

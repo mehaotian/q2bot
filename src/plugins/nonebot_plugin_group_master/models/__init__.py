@@ -15,5 +15,7 @@ add_model(f"{root}.models.steam_model")
 add_model(f"{root}.models.reward_model")
 # 添加参与抽奖模型
 add_model(f"{root}.models.join_lottery_model")
+# 添加小黑盒模型
+add_model(f"{root}.models.xhh_model")
 
 print('----- nonebot_plugin_group_master')

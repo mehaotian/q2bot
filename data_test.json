@@ -1,0 +1,34 @@
+{
+    "app": "com.tencent.structmsg",
+    "config": {
+        "ctime": 1726649096,
+        "forward": 1,
+        "token": "7f6e3f6fc46d0efbebc6d62b94752eee",
+        "type": "normal"
+    },
+    "extra": {
+        "app_type": 1,
+        "appid": 1105910806,
+        "uin": 490272692
+    },
+    "meta": {
+        "news": {
+            "action": "",
+            "android_pkg_name": "",
+            "app_type": 1,
+            "appid": 1105910806,
+            "ctime": 1726649096,
+            "desc": "前言  大家好，这里叶叶子，今天要推荐的是一款漫画风的独立游戏——《辛特堡传说》",
+            "jumpUrl": "https://api.xiaoheihe.cn/v3/bbs/app/api/web/share?link_id=133815114",
+            "preview": "https://pic.ugcimg.cn/7f74ddde10956014d5bba7528bb9102f/jpg1",
+            "source_icon": "https://open.gtimg.cn/open/app_icon/05/91/08/06/1105910806_100_m.png?t=1726039968",
+            "source_url": "",
+            "tag": "小黑盒",
+            "title": "【叶叶子资讯篇】《辛特堡传说》当漫画走进游戏",
+            "uin": 490272692
+        }
+    },
+    "prompt": "[分享]【叶叶子资讯篇】《辛特堡传说》当漫画走进游戏",
+    "ver": "0.0.0.1",
+    "view": "news"
+}

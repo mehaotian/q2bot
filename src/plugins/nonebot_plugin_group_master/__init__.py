@@ -14,6 +14,7 @@ from . import (
     steam,
     lottery,
     group_admin,
+    xhh_admin
 )
 
 
