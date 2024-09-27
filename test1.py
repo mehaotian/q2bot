@@ -158,3 +158,6 @@ steam_id = SteamID(1585510901)
 # }
 # response = httpx.get(url,headers=header)
 # print(response.json())
+
+jsonData = api.call('appdetails', steamids=steam_id)
+print('获取游戏详情：', jsonData)
