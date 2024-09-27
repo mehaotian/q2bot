@@ -23,8 +23,10 @@ gamequery = on_regex(pattern = gamereg, rule=to_me(), priority=20, block=True)
 @gamequery.handle()
 async def _(bot: Bot, event: Event):
     data = hey_box(20)
-    content = []
     await bot.send(event= event, message= "正在为您查询，请稍等...")
+
+    content = []
+
     for item in data:
         content_item = MessageSegment.image(item['图片'])+MessageSegment.text(
             (f"游戏名称：{item['标题']}\n"

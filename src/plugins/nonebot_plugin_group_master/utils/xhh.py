@@ -6,10 +6,10 @@ from urllib.parse import urlencode
 
 import requests
 import os
+
 # 配置项
 # 代理ip设置
 proxies = {}
-
 
 header = {
     "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/113.0.0.0 Safari/537.36",
@@ -132,10 +132,13 @@ def dict_to_query_string(params: dict) -> str:
     query_string = urlencode(params)
     return f"?{query_string}"
 
+
 url = 'https://api.xiaoheihe.cn'
 links_text = "/bbs/web/profile/post/links"
 detial_text = "/bbs/app/api/share/data"
 user_info_text = "/bbs/app/profile/user/profile"
+comment_text = "/bbs/app/link/tree"
+
 
 # https://api.xiaoheihe.cn/bbs/web/profile/post/links?os_type=web&version=999.0.3&x_app=heybox_website&x_client_type=web&heybox_id=43580550&x_os_type=Mac&hkey=FDC9386&_time=1718355163&nonce=8957D56ECF6C4DA42220161FBF925778&userid=1985029&limit=20&offset=0&post_type=2&list_type=article
 # https://api.xiaoheihe.cn/bbs/app/api/share/data/?os_type=web&app=heybox&client_type=mobile&version=999.0.3&x_client_type=web&x_os_type=Mac&x_client_version=&x_app=heybox&heybox_id=-1&offset=0&limit=3&link_id=125369222&use_concept_type=&hkey=C2N4Q78&_time=1718355967&nonce=28BCBB38D225EA790D352A9CC3E8932A
@@ -163,8 +166,8 @@ def article_url(page: int, user_id: int, limit: int = 20):
         "userid": user_id,
         "limit": limit,
         "offset": str((page - 1) * 20),
-        "post_type": 2,
-        "list_type": "article"
+        "post_type": 1,
+        # "list_type": "article"
     })
     return f'{url}{links_text}?{query_string}'
 
@@ -177,30 +180,109 @@ def detail_ulr(linkid: int, page: int = 1):
     return f'https://api.xiaoheihe.cn/bbs/app/api/share/data/?os_type=web&app=heybox&client_type=mobile&version=999.0.3&x_client_type=web&x_os_type=Mac&x_client_version=&x_app=heybox&heybox_id=-1&offset={str((page - 1) * 20)}&limit=20&link_id={linkid}&use_concept_type=&hkey={obj["hkey"]}&_time={obj["_time"]}&nonce={obj["nonce"]}'
 
 
+def comment_url(link_id: int, page: int = 1, limit: int = 100):
+    """
+    获取文章评论
+    """
+    # https://api.xiaoheihe.cn/bbs/app/link/tree?
+    # link_id=133798885&
+    # page=1&
+    # limit=100&
+    # sort_filter=hot&
+    # client_type=heybox_chat&
+    # x_client_type=web&
+    # os_type=web&
+    # x_os_type=Windows&
+    # device_info=Chrome&
+    # x_app=heybox_chat&
+    # version=999.0.3&
+    # web_version=1.0.0&
+    # chat_os_type=web&
+    # chat_version=1.24.4&
+    # chat_exe_version=&
+    # heybox_id=36331242&
+    # nonce=fb1da23e46ff7597356afaf788bdb5e2&
+    # _time=1726630912&
+    # hkey=KMF1D02&
+    # _chat_time=540590493&
+    # imei=58dcf9f48bba35a0&
+    # build=783
+
+    obj = D(comment_text)
+    query_string = dict_to_query_string({
+        "link_id": link_id,
+        "page": page,
+        "limit": limit,
+        "sort_filter": "time_desc",
+        "client_type": "heybox_chat",
+        "x_client_type": "web",
+        "os_type": "web",
+        "x_os_type": "Windows",
+        "device_info": "Chrome",
+        "x_app": "heybox_chat",
+        "version": "999.0.3",
+        "web_version": "1.0.0",
+        "chat_os_type": "web",
+        "chat_version": "1.24.4",
+        "chat_exe_version": "",
+        "heybox_id": 36331242,
+        "nonce": obj["nonce"],
+        "_time": obj["_time"],
+        "hkey": obj["hkey"],
+        "_chat_time": 540590493,
+        "imei": "58dcf9f48bba35a0",
+        "build": 783,
+    })
+
+    return f'{url}{comment_text}{query_string}'
+
+
 def get_article_list(user_id: str, page: int = 1, limit: int = 20):
     """
     获取文章列表
     """
     url = article_url(page=page, user_id=user_id, limit=limit)
     json_page = json.loads(other_request(url, headers=header).text)
-    # result_list = json_page["post_links"]
-    # result = []
-    # for item in result_list:
-    #     gameinfo = {
-    #         "链接": item["share_url"],
-    #         "图片": item["thumbs"][0],
-    #         "标题": item["title"],
-    #     }
-    #     result.append(gameinfo)
 
-    return json_page
+    if not json_page or json_page.get('status') != 'ok':
+        return None
+    result_list = json_page["post_links"]
+    return result_list if result_list else None
+
+
+def get_detail(link_id: int, page: int = 1):
+    """
+    获取文章详情
+    """
+    url = detail_ulr(linkid=link_id, page=page)
+    json_page = json.loads(other_request(url, headers=header).text)
+
+    share_data = json_page.get('share_data')
+    if not share_data:
+        return None
+    return share_data
+
+
+def get_comment(link_id: int, page: int = 1):
+    """
+    获取文章评论
+    """
+    url = comment_url(link_id=link_id, page=page)
+    json_page = json.loads(other_request(url, headers=header).text)
+    if not json_page or json_page.get('status') != 'ok':
+        return None
+    comment_data = json_page.get('result', [])
+    if not comment_data:
+        return None
+    return comment_data
+
 
 def get_user_info(user_id: str):
     """
     获取用户信息
     """
     user_url = f'{url}{user_info_text}?userid={user_id}'
-   
+
     user_json = json.loads(other_request(user_url, headers=header).text)
 
     if not user_json or user_json.get('status') != 'ok':

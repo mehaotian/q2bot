@@ -272,6 +272,7 @@ async def saying_handle(bot: Bot,  matcher: Matcher, event: GroupMessageEvent, s
     # 获取用户消息
     message = event.get_message()
     msgdata = message.extract_plain_text().strip()
+    print(msgdata)
 
     is_words_ok = await check_message_legality(gid=gid, cmd=matcher, msg=msgdata)
 
