@@ -8,9 +8,9 @@ from nonebot_plugin_apscheduler import scheduler
 from nonebot.log import logger
 from .config import global_config
 
+# say,
 from . import (
     welcome,
-    say,
     steam,
     lottery,
     group_admin,
