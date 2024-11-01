@@ -25,7 +25,7 @@ class ZyGameTable(Model):
     # 群组 ID
     group_id = fields.CharField(max_length=255, default="")
     # 游戏天数
-    days = fields.IntField(default=0)
+    days = fields.IntField(default=1)
     # 游戏人数
     players_count = fields.IntField(default=0)
 

@@ -1,3 +1,6 @@
-from importlib import import_module
+# from importlib import import_module
 
-import_module('.game', __package__)
+# # 加载主游戏模块
+# import_module('.game', __package__)
+
+# print('zhiyin_adventure loaded')

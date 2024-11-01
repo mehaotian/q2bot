@@ -18,7 +18,9 @@ from nonebot.adapters.onebot.v11 import (
 )
 from nonebot.matcher import Matcher
 from nonebot.rule import to_me
+from nonebot.log import logger
 
+from ..models import ZyPlayerTable
 from ..hooks.game_hook import GameHook
 from ..hooks.player_hook import PlayerHook
 
@@ -63,9 +65,11 @@ async def join_game_handle(bot: Bot, matcher: Matcher, event: GroupMessageEvent)
 
 @run_game.handle()
 async def run_game_handle(bot: Bot, matcher: Matcher, event: GroupMessageEvent):
+    uid = str(event.user_id)
+    gid = str(event.group_id)
     game = await GameHook.check_game(str(event.group_id))
-    
-    player = PlayerHook(bot=bot, event=event,game=game)
+    player_data = await ZyPlayerTable.get_player(game_id=game.id, gid=gid, uid=uid)
 
-    print("run_game_handle:11111")
-    player.set_coin(100)
+    player = PlayerHook(cmd=matcher,bot=bot, event=event, game=game, player=player_data)
+    # 运行游戏,角色金币 经验等增加
+    await player.run()

@@ -34,6 +34,7 @@ class GameHook:
         """
         # 获取游戏是否存在
         record = await ZyGameTable.get_game(gid)
+        print(record.status)
 
         if not record:
             # 创建游戏
@@ -109,6 +110,12 @@ class GameHook:
         return False
     
     async def have_player(bot: Bot, event: GroupMessageEvent):
+        """
+        是否加入游戏
+        参数：
+            - bot: Bot
+            - event: GroupMessageEvent
+        """
         gid = str(event.group_id)
         uid = str(event.user_id)
         return await GameHook.check_player(gid, uid)
